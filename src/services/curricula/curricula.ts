@@ -1,0 +1,69 @@
+import apiClient from "../../util/apiClient";
+
+export interface Subject {
+    subject_code: string;
+    subject_name: string;
+    semester: number;
+    hours_per_week: number;
+    status: number;
+    year: number;
+    credit: number
+};
+
+export interface SubjectPayload {
+    specialty_code: string;
+    subject_code: string;
+    subject_name: string;
+    semester: number;
+    status: number;
+    credit?: number;
+    year: number;
+    hours_per_week?: number;
+};
+
+export interface SubjectDetails {
+    subject_code: string;
+    subject_name: string;
+    subject_description: string;
+    semester: number;
+    status: number;
+    credit?: number;
+    year: number;
+    hours_per_week?: number;
+};
+
+export const getCurriculaBySpecialtyCode = async (specialtyCode: string, start: number, end: number, lang_code: string) => {
+    try {
+        const response = await apiClient.get(`/api/curricula/${specialtyCode}/subjects?start=${start}&end=${end}&lang=${lang_code}`);
+        if (response.data.statusCode === 200) {
+            return {
+                "subjects": response.data.subjects,
+                "total_subjects": response.data.total
+            }
+        } else {
+            return "ERROR";
+        }
+    } catch (e: any) {
+        if (e.response && e.response.status === 404) {
+            return "NOT FOUND";
+        } else {
+            return "ERROR";
+        }
+    }
+}
+
+export const getSubjectDetails = async (subjectCode: string, lang_code: string) => {
+    try {
+        const response = await apiClient.get(`/api/curricula/${subjectCode}?lang=${lang_code}`);
+
+        if (response.data.statusCode === 200) {
+            return response.data.subject_details;
+        }
+    } catch (e: any) {
+        if (e.response && e.response.status === 404) {
+            return "NOT FOUND";
+        } else {
+            return "ERROR";
+        }
+    }
+}
