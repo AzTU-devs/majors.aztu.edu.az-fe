@@ -8,7 +8,6 @@ import Header from "@/components/header/Header";
 import Specialties from "@/components/specialties/Specialties";
 import PageTitle from "@/components/pageTitle/PageTitle";
 import Search from "@/components/search/Search";
-// import Filter from "@/components/filter/Filter";
 import FacultyCategory from "@/components/facultyCategory/FacultyCategoty";
 
 export type Locale = "az" | "en";
@@ -24,20 +23,32 @@ export default function page() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow bg-[#F6F7F8]">
-        <PageTitle title={`${locale === "az" ? "Bakalavr ixtisasları (Təhsil proqramları)" : "Bachelor specialties"}`} />
-        <section className="w-[100%] mx-auto flex flex-col md:flex-col gap-8 px-4 md:px-[30px] py-10 md:py-[50px]">
-          <div className="w-full mt-6 mr-[20px] md:mt-0">
-            {/* <Filter /> */}
+      <main className="flex-grow bg-[#f1f5f9] dark:bg-slate-900">
+        <PageTitle
+          category={locale === "az" ? "Bakalavr" : "Bachelor"}
+          title={locale === "az" ? "Bakalavr ixtisasları (Təhsil proqramları)" : "Bachelor Specialties"}
+          subtitle={locale === "az" ? "Azərbaycan Texniki Universitetinin bakalavr proqramları" : "Undergraduate programs at Azerbaijan Technical University"}
+        />
+        <section className="max-w-6xl mx-auto w-full flex flex-col gap-5 px-4 md:px-8 py-8 md:py-10">
+          {/* Search & Filter Panel */}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-[#e2e8f0] dark:border-slate-700 p-5">
+            <label className="block text-[11px] uppercase tracking-[0.12em] text-[#64748b] dark:text-slate-400 font-semibold mb-2">
+              {locale === "az" ? "İxtisas axtar" : "Search specialties"}
+            </label>
             <Search onSearch={handleSearch} />
-            <FacultyCategory />
+            <div className="mt-4 pt-4 border-t border-[#f1f5f9] dark:border-slate-700">
+              <label className="block text-[11px] uppercase tracking-[0.12em] text-[#64748b] dark:text-slate-400 font-semibold mb-3">
+                {locale === "az" ? "Fakültəyə görə filtr" : "Filter by faculty"}
+              </label>
+              <FacultyCategory />
+            </div>
           </div>
-          <div className="flex-1 w-full">
-            <Specialties search={search} />
-          </div>
+
+          {/* Results */}
+          <Specialties search={search} />
         </section>
       </main>
       <Footer />
     </div>
-  )
+  );
 }

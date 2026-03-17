@@ -1,72 +1,71 @@
-import React, { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
+"use client";
+
+import React from 'react';
+import { motion } from 'framer-motion';
 
 type PageTitleProps = {
   title?: string;
+  subtitle?: string;
+  category?: string;
 };
 
-// dynamically import Particles
-const Particles = dynamic(
-  () => import('react-tsparticles').then(mod => mod.Particles || mod.default),
-  { ssr: false }
-);
-
-export default function PageTitle({ title }: PageTitleProps) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) return null;
-
+export default function PageTitle({ title, subtitle, category }: PageTitleProps) {
   return (
-    <div className="relative h-[200px] w-full overflow-hidden border-b border-gray-300 shadow-sm bg-[#182f79]">
-      {/* <Particles
-        id="tsparticles"
-        className="absolute inset-0 z-0"
-        options={{
-          fullScreen: { enable: false },
-          background: { color: 'transparent' },
-          fpsLimit: 60,
-          interactivity: {
-            events: {
-              onHover: { enable: true, mode: 'grab' },
-              onClick: { enable: true, mode: 'push' },
-              resize: true,
-            },
-            modes: {
-              grab: { distance: 150, links: { opacity: 0.8 } },
-              push: { quantity: 4 },
-              repulse: { distance: 100, duration: 0.4 },
-            },
-          },
-          particles: {
-            number: { value: 80, density: { enable: true, area: 800 } },
-            color: { value: '#3b82f6' },
-            shape: { type: 'circle' },
-            opacity: { value: 0.6 },
-            size: { value: { min: 2, max: 4 } },
-            links: {
-              enable: true,
-              distance: 150,
-              color: '#3b82f6',
-              opacity: 0.5,
-              width: 1,
-            },
-            move: {
-              enable: true,
-              speed: 1,
-              direction: 'none',
-              random: false,
-              straight: false,
-              outModes: { default: 'out' },
-            },
-          },
-          detectRetina: true,
+    <div
+      className="relative h-[260px] w-full overflow-hidden"
+      style={{
+        background: "linear-gradient(135deg, #182f79 0%, #1e40af 45%, #0E205B 100%)",
+      }}
+    >
+      {/* Dot-grid pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.07]"
+        style={{
+          backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
         }}
-      /> */}
-      <h1 className="text-white text-[25px] absolute bottom-0 left-5 z-10 border-b-4 border-white" >{title}</h1>
+      />
+
+      {/* Angled geometric accent — right side */}
+      <div
+        className="absolute -right-16 top-0 h-full w-64 opacity-10"
+        style={{
+          background: "linear-gradient(to left, #ffffff, transparent)",
+          clipPath: "polygon(40% 0%, 100% 0%, 100% 100%, 0% 100%)",
+        }}
+      />
+
+      {/* Large decorative circle */}
+      <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full border border-white/10" />
+      <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full border border-white/10" />
+
+      {/* Content */}
+      <motion.div
+        className="absolute inset-0 flex flex-col justify-end px-6 md:px-14 pb-8 z-10"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        {category && (
+          <span className="inline-flex items-center gap-1.5 text-white/60 text-[11px] uppercase tracking-[0.15em] font-semibold mb-3">
+            <span className="w-4 h-px bg-white/40" />
+            {category}
+          </span>
+        )}
+        <div className="flex items-end gap-4">
+          <div className="w-1 h-10 rounded-full bg-white/50 mb-0.5 flex-shrink-0" />
+          <div>
+            <h1 className="text-white text-[24px] md:text-[30px] font-bold leading-tight drop-shadow-sm">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="text-white/65 text-[13px] md:text-sm mt-1.5 font-normal">
+                {subtitle}
+              </p>
+            )}
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

@@ -17,9 +17,7 @@ export default function Literatures({ subjectCode }: { subjectCode: string }) {
     const [specialtyName, setSpecialtyName] = useState("");
     const locale: Locale = useSelector((state: RootState) => state.locale.value);
     const [literatures, setLiteratures] = useState<Literature[]>([]);
-    const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
-
 
     useEffect(() => {
         setLoading(true);
@@ -27,10 +25,8 @@ export default function Literatures({ subjectCode }: { subjectCode: string }) {
             .then((res) => {
                 if (typeof res === "object") {
                     setLiteratures(res.literatures);
-                    setTotal(res.total);
                 } else {
                     setLiteratures([]);
-                    setTotal(0);
                 }
             })
             .finally(() => setLoading(false));
@@ -40,81 +36,97 @@ export default function Literatures({ subjectCode }: { subjectCode: string }) {
         { href: "program-learning-outcomes", az: "Proqram Təlim məqsədləri", en: "Program learning outcomes" },
         { href: "student-learning-outcomes", az: "Tələbələrin Təlim Nəticələri", en: "Student Learning Outcomes" },
         { href: "graduate-career-opportunities", az: "Məzunların Karyera İmkanları", en: "Graduate Career Opportunities" },
-        // { href: "literatures", az: "Ədəbiyyat", en: "Literatures" },
         { href: "competency", az: "Səriştələr", en: "Competencies" },
         { href: "subjects", az: "Kurrikulum", en: "Curriculum" },
         { href: "clo", az: "İxtisasın təlim nəticəsi", en: "Course learning outcomes" },
     ];
 
-    console.log(subjectCode);
-
     return (
         <>
             <Head>
-                <title>{`${specialtyName} (${subjectCode}) - ${locale === "az" ? "Proqram Təlim Məqsədləri" : "Program Learning Outcomes"}`}</title>
-                <meta
-                    name="description"
-                    content={`${locale === "az" ? "Tələbələr üçün proqram təlim məqsədləri" : "Program learning outcomes for students"}: ${specialtyName}`}
-                />
+                <title>{`${subjectCode} - ${locale === "az" ? "Ədəbiyyatlar" : "Literatures"}`}</title>
             </Head>
-            <nav className="flex flex-wrap justify-center gap-3">
+
+            {/* Tab navigation */}
+            <nav className="flex flex-wrap justify-center gap-2 px-4">
                 {navItems.map((item) => {
                     const isActive = pathname.endsWith(item.href);
                     return (
                         <Link
                             key={item.href}
                             href={`/${locale}/bachelor/specialty-details/${subjectCode}/${item.href}`}
-                            className={`px-4 py-2 rounded-lg border border-gray-300 text-gray-700 transition ${isActive ? "bg-[#182f79] text-white" : "hover:bg-[#182f79] hover:text-white"
-                                }`}
+                            className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all duration-200 border ${
+                                isActive
+                                    ? "bg-[#182f79] text-white border-[#182f79] shadow-sm"
+                                    : "bg-white dark:bg-slate-800 text-[#64748b] dark:text-slate-400 border-[#e2e8f0] dark:border-slate-700 hover:border-[#182f79]/30 dark:hover:border-blue-400/30 hover:text-[#182f79] dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-slate-700/50"
+                            }`}
                         >
                             {locale === "az" ? item.az : item.en}
                         </Link>
                     );
                 })}
             </nav>
-            <section className="py-[10px] px-[30px] flex flex-col justify-between items-center w-full">
-                <div className="w-[100%] flex flex-col items-center ju">
-                    {/* <div className="flex justify-center items-center text-[#182f79] text-[20px] font-bold mt-[40px]">
-                        {loading ? <Skeleton width={200} /> : `${specialtyName} (${specialtyCode})`}
-                    </div> */}
-                    <h2 className="mt-6 text-[#182f79] text-[20px] font-semibold w-full flex justify-center items-center mb-[10px]">
-                        {locale === "az" ? "Ədəbiyyatlar" : "Literatures"}
-                    </h2>
-                    {loading ? (
-                        <div className="mt-4 w-full flex flex-wrap justify-between">
-                            {[...Array(4)].map((_, index) => (
-                                <div
-                                    key={index}
-                                    className="border border-[rgba(0,0,0,0.2)] border-t-[#182f79] shadow-md border-t-4 text-[#182f79] p-4 rounded-xl flex flex-col w-[calc(50%-8px)] mb-4"
-                                >
-                                    <Skeleton variant="text" width="80%" height={30} />
-                                    <Skeleton variant="rectangular" width="100%" height={20} className="mt-2" />
+
+            <section className="py-6 px-4 md:px-8 w-full">
+                <p className="text-center text-[#182f79] font-bold text-[18px] mb-6">
+                    {locale === "az" ? "Ədəbiyyatlar" : "Literatures"}
+                </p>
+
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[...Array(4)].map((_, index) => (
+                            <div
+                                key={index}
+                                className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-[#e2e8f0] dark:border-slate-700 animate-pulse flex items-start gap-3.5"
+                            >
+                                <div className="w-9 h-9 rounded-full bg-gray-100 flex-shrink-0" />
+                                <div className="flex-1">
+                                    <Skeleton variant="text" width="80%" height={20} />
+                                    <Skeleton variant="text" width="50%" height={16} style={{ marginTop: 6 }} />
                                 </div>
-                            ))}
-                        </div>
-                    ) : literatures && literatures.length > 0 ? (
-                        <ol className="mt-4 flex flex-wrap justify-between list-decimal list-inside w-full">
-                            {literatures.map((literature, index) => (
-                                <li
-                                    key={index}
-                                    className="border border-[rgba(0,0,0,0.2)] border-t-[#182f79] shadow-md hover:shadow-lg transition-shadow border-t-4 text-[#182f79] transition-colors duration-300 p-4 rounded-xl flex flex-col w-[calc(50%-8px)] mb-4"
+                            </div>
+                        ))}
+                    </div>
+                ) : literatures && literatures.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {literatures.map((literature, index) => (
+                            <a
+                                key={index}
+                                href={literature.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-[#e2e8f0] dark:border-slate-700 hover:border-[#182f79]/25 dark:hover:border-blue-400/25 hover:shadow-md hover:bg-blue-50/20 dark:hover:bg-slate-700/20 transition-all duration-200 flex items-start gap-3.5"
+                            >
+                                <div className="w-9 h-9 rounded-full bg-[#182f79]/8 flex items-center justify-center text-[#182f79] text-[11px] font-bold flex-shrink-0 group-hover:bg-[#182f79] group-hover:text-white transition-colors duration-200">
+                                    {String(index + 1).padStart(2, "0")}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[#1e293b] dark:text-slate-100 text-[14px] font-semibold leading-snug group-hover:text-[#182f79] dark:group-hover:text-blue-400 transition-colors duration-200">
+                                        {literature.literature_name}
+                                    </p>
+                                    {literature.url && (
+                                        <p className="text-[#2563eb] text-[12px] mt-1 truncate">
+                                            {literature.url}
+                                        </p>
+                                    )}
+                                </div>
+                                <svg
+                                    className="w-4 h-4 text-[#cbd5e1] group-hover:text-[#182f79] flex-shrink-0 mt-0.5 transition-colors duration-200"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
                                 >
-                                    <div className="flex-1 font-bold flex justify-center items-center text-center">
-                                        <a href={literature.url} target="_blank">
-                                            {literature.literature_name}
-                                        </a>
-                                    </div>
-                                </li>
-                            ))}
-                        </ol>
-                    ) : (
-                        <div className="text-gray-500 mt-6 text-center w-full">
-                            {locale === "az" ? "Məzmun tapılmadı" : "No content available"}
-                        </div>
-                    )}
-                </div>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                            </a>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center text-[#64748b] dark:text-slate-400 py-10 font-medium">
+                        {locale === "az" ? "Məzmun tapılmadı" : "No content available"}
+                    </div>
+                )}
             </section>
         </>
-    )
+    );
 }
- 

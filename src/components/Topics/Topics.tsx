@@ -2,15 +2,8 @@
 
 import Link from "next/link";
 import Head from "next/head";
-import { useState } from "react";
-import AddIcon from '@mui/icons-material/Add';
 import Skeleton from "@mui/material/Skeleton";
 import { Topic } from "@/services/topic/topic";
-import Accordion from "@mui/material/Accordion";
-import Typography from "@mui/material/Typography";
-import RemoveIcon from '@mui/icons-material/Remove';
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
 import { usePathname } from "next/navigation";
 
 export interface TopicPropInterface {
@@ -22,19 +15,32 @@ export interface TopicPropInterface {
 
 export type Locale = "az" | "en";
 
+const topicTypeBadge = (type: number, locale: string) => {
+    const map: Record<number, { label: string; color: string; bg: string }> = {
+        1: { label: locale === "az" ? "Mühazirə" : "Lecture",     color: "#1e40af", bg: "#dbeafe" },
+        2: { label: locale === "az" ? "Məşğələ" : "Practice",     color: "#065f46", bg: "#d1fae5" },
+        3: { label: locale === "az" ? "Laboratoriya" : "Lab",     color: "#7c3aed", bg: "#ede9fe" },
+        4: { label: locale === "az" ? "Sərbəst iş" : "Self-study", color: "#b45309", bg: "#fef3c7" },
+    };
+    const entry = map[type] ?? { label: locale === "az" ? "Mövcud deyil" : "N/A", color: "#64748b", bg: "#f1f5f9" };
+    return (
+        <span
+            className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+            style={{ color: entry.color, backgroundColor: entry.bg }}
+        >
+            {entry.label}
+        </span>
+    );
+};
+
 export default function Topics({ topics, subjectCode, locale, specialtyCode }: TopicPropInterface) {
     const pathname = usePathname();
     const loading = !topics || topics.length === 0 || !specialtyCode;
-    const [expandedIndex, setExpandedIndex] = useState<number | false>(0);
-    const handleAccordionChange = (index: number) => (event: React.SyntheticEvent, isExpanded: boolean) => {
-        setExpandedIndex(isExpanded ? index : false);
-    };
 
     const navItems = [
         { href: "program-learning-outcomes", az: "Proqram Təlim məqsədləri", en: "Program learning outcomes" },
         { href: "student-learning-outcomes", az: "Tələbələrin Təlim Nəticələri", en: "Student Learning Outcomes" },
         { href: "graduate-career-opportunities", az: "Məzunların Karyera İmkanları", en: "Graduate Career Opportunities" },
-        // { href: "literatures", az: "Ədəbiyyat", en: "Literatures" },
         { href: "competency", az: "Səriştələr", en: "Competencies" },
         { href: "subjects", az: "Kurrikulum", en: "Curriculum" },
     ];
@@ -42,90 +48,102 @@ export default function Topics({ topics, subjectCode, locale, specialtyCode }: T
     return (
         <>
             <Head>
-                <title>{`${subjectCode} (${subjectCode}) - ${locale === "az" ? "Proqram Təlim Məqsədləri" : "Program Learning Outcomes"}`}</title>
+                <title>{`${subjectCode} - ${locale === "az" ? "Mövzular" : "Topics"}`}</title>
                 <meta
                     name="description"
-                    content={`${locale === "az" ? "Tələbələr üçün proqram təlim məqsədləri" : "Program learning outcomes for students"}`}
+                    content={`${locale === "az" ? "Fənn mövzuları" : "Subject topics"}`}
                 />
             </Head>
-            <nav className="flex flex-wrap justify-center gap-3">
+
+            {/* Tab navigation */}
+            <nav className="flex flex-wrap justify-center gap-2 px-4">
                 {navItems.map((item) => {
                     const isActive = pathname.endsWith(item.href);
                     return (
                         <Link
                             key={item.href}
                             href={`/${locale}/bachelor/specialty-details/${specialtyCode}/${item.href}`}
-                            className={`px-4 py-2 rounded-lg border border-gray-300 text-gray-700 transition ${isActive ? "bg-[#182f79] text-white" : "hover:bg-[#182f79] hover:text-white"
-                                }`}
+                            className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all duration-200 border ${
+                                isActive
+                                    ? "bg-[#182f79] text-white border-[#182f79] shadow-sm"
+                                    : "bg-white dark:bg-slate-800 text-[#64748b] dark:text-slate-400 border-[#e2e8f0] dark:border-slate-700 hover:border-[#182f79]/30 dark:hover:border-blue-400/30 hover:text-[#182f79] dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-slate-700/50"
+                            }`}
                         >
                             {locale === "az" ? item.az : item.en}
                         </Link>
                     );
                 })}
             </nav>
-            <section className="py-[10px] px-[30px] flex flex-col justify-between items-center w-full">
-                <div className="mt-6 w-full flex flex-col grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <section className="py-6 px-4 md:px-8 w-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {loading
                         ? [...Array(6)].map((_, i) => (
-                            <div key={i} className="flex flex-col h-32 bg-gray-200 rounded-xl animate-pulse" />
+                            <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-[#e2e8f0] dark:border-slate-700 animate-pulse h-36" />
                         ))
                         : topics.map((topic, index) => (
                             <div
                                 key={index}
-                                className="flex flex-col bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border-t-4 border-[#182f79] p-6"
+                                className="group bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-[#e2e8f0] dark:border-slate-700 hover:shadow-md hover:border-[#182f79]/20 dark:hover:border-blue-400/20 transition-all duration-200 overflow-hidden"
                             >
-                                {/* Card Header */}
-                                <h3 className="text-lg font-semibold text-[#182f79] mb-3">
-                                    {topic.topic_name}
-                                </h3>
+                                {/* Card header */}
+                                <div className="px-5 pt-4 pb-3 flex items-start justify-between gap-3 border-b border-[#f1f5f9] dark:border-slate-700">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-7 h-7 rounded-full bg-[#182f79]/8 flex items-center justify-center text-[#182f79] text-[11px] font-bold flex-shrink-0 mt-0.5">
+                                            {index + 1}
+                                        </div>
+                                        <h3 className="text-[#1e293b] dark:text-slate-100 font-semibold text-[14px] leading-snug">
+                                            {topic.topic_name}
+                                        </h3>
+                                    </div>
+                                    {topicTypeBadge(topic.topic_type, locale)}
+                                </div>
 
-                                {/* Card Content */}
-                                <p className="text-gray-700 flex-1 mb-2">
-                                    <span className="font-bold">{locale === "az" ? "Mövzu tipi: " : "Topic type: "}</span>
-                                    {topic.topic_type === 1
-                                        ? "Mühazirə"
-                                        : topic.topic_type === 2
-                                            ? "Məşğələ"
-                                            : topic.topic_type === 3
-                                                ? "Laboratoriya"
-                                                : topic.topic_type === 4
-                                                    ? "Sərbəst iş"
-                                                    : "Mövcud deyil"}
-                                </p>
+                                {/* Card body */}
+                                <div className="px-5 py-3 flex flex-col gap-2">
+                                    {topic.topic_desc && (
+                                        <p className="text-[#64748b] dark:text-slate-400 text-[13px]">
+                                            <span className="font-semibold text-[#1e293b] dark:text-slate-100">
+                                                {locale === "az" ? "Deskripsiya: " : "Description: "}
+                                            </span>
+                                            {topic.topic_desc}
+                                        </p>
+                                    )}
+                                    {topic.topic_result && (
+                                        <p className="text-[#64748b] dark:text-slate-400 text-[13px]">
+                                            <span className="font-semibold text-[#1e293b] dark:text-slate-100">
+                                                {locale === "az" ? "Nəticə: " : "Result: "}
+                                            </span>
+                                            {topic.topic_result}
+                                        </p>
+                                    )}
 
-                                <p className="text-gray-700 mb-2">
-                                    <span className="font-bold">{locale === "az" ? "Mövzu deskripsiyası: " : "Topic description: "}</span>
-                                    {topic.topic_desc}
-                                </p>
-
-                                <p className="text-gray-700 mb-2">
-                                    <span className="font-bold">{locale === "az" ? "Mövzunun təlim nəticəsi: " : "Topic result: "}</span>
-                                    {topic.topic_result}
-                                </p>
-
-                                <p className="text-gray-700">
-                                    <span className="font-bold">{locale === "az" ? "Mövzu təlim nəticələri: " : "Topic learning outcomes: "}</span>
-                                    <Link className="underline"
-                                    href={{
-                                        pathname: `/${locale}/bachelor/specialty-details/${specialtyCode}/subjects/${subjectCode}/topics/topicTlos`,
-                                        query: { topicCode: topic.topic_code },
-                                    }}>
-                                        {locale === "az" ? "Keçid" : "Go"}
-                                    </Link>
-                                </p>
-
-                                {topic.topic_url && (
-                                    <p className="text-gray-700">
-                                        <span className="font-bold">{locale === "az" ? "Mövzu linki: " : "Topic url: "}</span>
-                                        <a className="underline" href={topic.topic_url} target="_blank">
-                                            {locale === "az" ? "Keçid" : "Go"}
-                                        </a>
-                                    </p>
-                                )}
+                                    <div className="flex items-center gap-3 mt-1 pt-2 border-t border-[#f1f5f9] dark:border-slate-700">
+                                        <Link
+                                            className="text-[#2563eb] text-[12px] font-semibold hover:underline"
+                                            href={{
+                                                pathname: `/${locale}/bachelor/specialty-details/${specialtyCode}/subjects/${subjectCode}/topics/topicTlos`,
+                                                query: { topicCode: topic.topic_code },
+                                            }}
+                                        >
+                                            {locale === "az" ? "Təlim nəticələri →" : "Learning outcomes →"}
+                                        </Link>
+                                        {topic.topic_url && (
+                                            <a
+                                                className="text-[#2563eb] text-[12px] font-semibold hover:underline"
+                                                href={topic.topic_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {locale === "az" ? "Mövzu linki →" : "Topic link →"}
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         ))}
                 </div>
             </section>
         </>
-    )
+    );
 }

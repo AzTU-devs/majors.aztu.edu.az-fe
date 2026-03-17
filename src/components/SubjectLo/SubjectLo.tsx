@@ -77,49 +77,53 @@ export default function SubjectLo({ specialtyCode }: { specialtyCode: string }) 
     return (
         <>
             <Head>
-                <title>{`${specialtyName} (${specialtyCode}) - ${locale === "az" ? "Proqram Təlim Məqsədləri" : "Program Learning Outcomes"}`}</title>
+                <title>{`${specialtyName} (${specialtyCode}) - ${locale === "az" ? "Fənnin Təlim Nəticələri" : "Subject Learning Outcomes"}`}</title>
                 <meta
                     name="description"
-                    content={`${locale === "az" ? "Tələbələr üçün proqram təlim məqsədləri" : "Program learning outcomes for students"}: ${specialtyName}`}
+                    content={`${locale === "az" ? "Fənnin təlim nəticələri" : "Subject learning outcomes"}: ${specialtyName}`}
                 />
             </Head>
-            <nav className="flex flex-wrap justify-center gap-3">
+
+            {/* Tab navigation */}
+            <nav className="flex flex-wrap justify-center gap-2 px-4">
                 {navItems.map((item) => {
                     const isActive = pathname.endsWith(item.href);
                     return (
                         <Link
                             key={item.href}
                             href={`/${locale}/bachelor/specialty-details/${specialtyCode}/subjects/PR001/${item.href}`}
-                            className={`px-4 py-2 rounded-lg border border-gray-300 text-gray-700 transition ${isActive ? "bg-[#182f79] text-white" : "hover:bg-[#182f79] hover:text-white"
-                                }`}
+                            className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all duration-200 border ${
+                                isActive
+                                    ? "bg-[#182f79] text-white border-[#182f79] shadow-sm"
+                                    : "bg-white dark:bg-slate-800 text-[#64748b] dark:text-slate-400 border-[#e2e8f0] dark:border-slate-700 hover:border-[#182f79]/30 dark:hover:border-blue-400/30 hover:text-[#182f79] dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-slate-700/50"
+                            }`}
                         >
                             {locale === "az" ? item.az : item.en}
                         </Link>
                     );
                 })}
             </nav>
-            <section className="py-[10px] px-[30px] flex flex-col justify-between items-center w-full">
-                <div className="w-[100%] flex flex-col items-center ju">
-                    {/* <div className="flex justify-center items-center text-[#182f79] text-[20px] font-bold mt-[40px]">
-                        {loading ? <Skeleton width={200} /> : `${specialtyName} (${specialtyCode})`}
-                    </div> */}
-                    <h2 className="mt-6 text-[#182f79] text-[20px] font-semibold w-full flex justify-center items-center mb-[10px]">
-                        {locale === "az" ? "Fənnin təlim nəticələri" : "Subject learning outcomes"}
-                    </h2>
-                    <ol className="mt-4 flex flex-wrap justify-between list-decimal list-inside w-full">
-                        {subLos.map((slo, index) => (
-                            <li
-                                key={index}
-                                className="border border-[rgba(0,0,0,0.2)] border-t-[#182f79] shadow-md hover:shadow-lg transition-shadow border-t-4 text-[#182f79] transition-colors duration-300 p-4 rounded-xl flex flex-col w-[calc(50%-8px)] mb-4"
-                            >
-                                <div className="flex-1 font-bold flex justify-center items-center text-center">
-                                    {index + 1}.{slo[locale]}
-                                </div>
-                            </li>
-                        ))}
-                    </ol>
+
+            <section className="py-6 px-4 md:px-8 w-full">
+                <p className="text-center text-[#182f79] font-bold text-[18px] mb-6">
+                    {locale === "az" ? "Fənnin təlim nəticələri" : "Subject learning outcomes"}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {subLos.map((slo, index) => (
+                        <div
+                            key={index}
+                            className="group bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-[#e2e8f0] dark:border-slate-700 hover:border-[#182f79]/25 dark:hover:border-blue-400/25 hover:shadow-md hover:bg-blue-50/20 dark:hover:bg-slate-700/20 transition-all duration-200 flex items-start gap-3.5"
+                        >
+                            <div className="w-9 h-9 rounded-full bg-[#182f79]/8 flex items-center justify-center text-[#182f79] text-[11px] font-bold flex-shrink-0 group-hover:bg-[#182f79] group-hover:text-white transition-colors duration-200">
+                                {String(index + 1).padStart(2, "0")}
+                            </div>
+                            <p className="text-[#1e293b] dark:text-slate-100 text-[14px] leading-relaxed font-medium flex-1">
+                                {slo[locale]}
+                            </p>
+                        </div>
+                    ))}
                 </div>
             </section>
         </>
-    )
+    );
 }
