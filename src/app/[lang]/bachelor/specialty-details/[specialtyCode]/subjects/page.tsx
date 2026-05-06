@@ -1,53 +1,22 @@
 "use client";
 
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import Skeleton from "@mui/material/Skeleton";
 import Header from "@/components/header/Header";
 import Footer from "@/components/footer/Footer";
 import Subjects from "@/components/Subjects/Subjects";
-import { getSpecialtyDetails } from "@/services/specialty/specialtyService";
-import PageTitle from "@/components/pageTitle/PageTitle";
 
-export type Locale = "az" | "en";
+export default function Page() {
+  const params = useParams();
+  const raw = params.specialtyCode;
+  const specialtyCode = Array.isArray(raw) ? raw[0] : raw || "";
 
-export default function page() {
-    const params = useParams();
-        const [loading, setLoading] = useState(false);
-        const specialtyCodeParam = params.specialtyCode;
-        const [specialtyName, setSpecialtyName] = useState("");
-        const specialtyCode: string = Array.isArray(specialtyCodeParam)
-            ? specialtyCodeParam[0]
-            : specialtyCodeParam || "";
-        const locale: Locale = useSelector((state: RootState) => state.locale.value);
-        useEffect(() => {
-            setLoading(true);
-            getSpecialtyDetails(specialtyCode, locale)
-                .then(setSpecialtyName)
-                .finally(() => {
-                    setLoading(false)
-                });
-        }, [locale]);
-
-    return (
-        <div className="flex flex-col min-h-screen">
-            <Header />
-            <PageTitle title={`${locale === "az" ? "Kurrikulum" : "Curriculum"}`}/>
-            <main className="flex-grow flex-col flex jusitfy-center items-center w-full">
-                <header className="mb-6 flex flex-col justify-center items-center p-8">
-                    {loading ? (
-                        <Skeleton variant="text" width={400} height={40} />
-                    ) : (
-                        <h1 className="text-3xl text-[#182f79] font-semibold">
-                            {specialtyName} ({specialtyCode})
-                        </h1>
-                    )}
-                </header>
-                <Subjects specialtyCode={specialtyCode} />
-            </main>
-            <Footer />
-        </div>
-    )
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow">
+        <Subjects specialtyCode={specialtyCode} />
+      </main>
+      <Footer />
+    </div>
+  );
 }

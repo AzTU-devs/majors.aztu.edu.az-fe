@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
 import { useEffect, useState } from "react";
 import Skeleton from "@mui/material/Skeleton";
-import { getSpecialtyDetails } from "@/services/specialty/specialtyService";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import SpecialtyShell from "./SpecialtyShell";
+import EmptyState from "./EmptyState";
 import {
   getSpecialtyChar,
   SpecialtyChar,
@@ -13,93 +13,72 @@ import {
 
 export type Locale = "az" | "en";
 
-export default function SpecialtyDetails({
-  specialtyCode,
-}: {
+interface Props {
   specialtyCode: string;
-}) {
-  const locale: Locale = useSelector((state: RootState) => state.locale.value);
-  const [specialtyName, setSpecialtyName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [specialtyChar, setSpecialtyChar] = useState<SpecialtyChar>();
+}
+
+export default function SpecialtyDetails({ specialtyCode }: Props) {
+  const locale: Locale = useSelector((s: RootState) => s.locale.value);
+  const [loading, setLoading] = useState(true);
+  const [chars, setChars] = useState<SpecialtyChar | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    getSpecialtyDetails(specialtyCode, locale)
-      .then(setSpecialtyName)
-      .finally(() => setLoading(false));
-    getSpecialtyChar(specialtyCode, locale).then(setSpecialtyChar);
-  }, [locale, specialtyCode]);
-
-  const navItems = [
-    { href: "program-learning-outcomes", az: "Proqram Təlim məqsədləri", en: "Program learning outcomes" },
-    { href: "student-learning-outcomes", az: "Tələbələrin Təlim Nəticələri", en: "Student Learning Outcomes" },
-    { href: "graduate-career-opportunities", az: "Məzunların Karyera İmkanları", en: "Graduate Career Opportunities" },
-    // { href: "literatures", az: "Ədəbiyyat", en: "Literatures" },
-    { href: "competency", az: "Səriştələr", en: "Competencies" },
-    { href: "subjects", az: "Kurrikulum", en: "Curriculum" },
-    { href: "clo", az: "İxtisasın təlim nəticəsi", en: "Course learning outcomes" },
-  ];
+    getSpecialtyChar(specialtyCode, locale).then((res: any) => {
+      if (cancelled) return;
+      setChars(res && typeof res === "object" ? res : null);
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [specialtyCode, locale]);
 
   return (
-    <section className="py-10 px-6 lg:px-20">
-      {/* Header */}
-      <div className="text-center mb-10">
-        <h1 className="text-3xl font-bold text-[#182f79]">
-          {loading ? (
-            <Skeleton width={250} />
-          ) : (
-            `${specialtyName} (${specialtyCode})`
-          )}
-        </h1>
-      </div>
-      <nav className="flex flex-wrap justify-center gap-3 mb-12">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={`/${locale}/bachelor/specialty-details/${specialtyCode}/${item.href}`}
-            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-[#182f79] hover:text-white transition"
-          >
-            {locale === "az" ? item.az : item.en}
-          </Link>
-        ))}
-      </nav>
-      <div className="max-w-[80%] mx-auto bg-white shadow-lg rounded-2xl p-8 space-y-10">
-        <div>
-          <h2 className="text-2xl font-semibold text-[#182f79] mb-4 text-center">
-            {locale === "az" ? "Proqram deskripsiyası" : "Program description"}
-          </h2>
-          <div className="text-lg text-gray-700 leading-relaxed text-justify">
-            {loading ? (
-              <div className="space-y-2">
-                <Skeleton animation="wave" height={28} width="90%" />
-                <Skeleton animation="wave" height={28} width="85%" />
-                <Skeleton animation="wave" height={28} width="80%" />
-                <Skeleton animation="wave" height={28} width="75%" />
-              </div>
-            ) : (
-              specialtyChar?.program_desc
-            )}
-          </div>
+    <SpecialtyShell specialtyCode={specialtyCode} active="overview">
+      {loading ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          {[0, 1].map((i) => (
+            <div key={i} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <Skeleton width="40%" height={28} />
+              <Skeleton variant="rectangular" height={120} className="mt-3 rounded" />
+            </div>
+          ))}
         </div>
+      ) : chars ? (
+        <div className="grid gap-5 md:grid-cols-2">
+          <article className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-7 shadow-sm transition hover:shadow-md">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#182f79] to-[#3b4fc2]" />
+            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#182f79]">
+              {locale === "az" ? "Proqram deskripsiyası" : "Program description"}
+            </h3>
+            <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-gray-700">
+              {chars.program_desc || "—"}
+            </p>
+          </article>
 
-        <div>
-          <h2 className="text-2xl font-semibold text-[#182f79] mb-4 text-center">
-            {locale === "az" ? "Proqram tələbləri" : "Program requirements"}
-          </h2>
-          <div className="text-lg text-gray-700 leading-relaxed text-justify">
-            {loading ? (
-              <div className="space-y-2">
-                <Skeleton animation="wave" height={28} width="90%" />
-                <Skeleton animation="wave" height={28} width="85%" />
-                <Skeleton animation="wave" height={28} width="80%" />
-              </div>
-            ) : (
-              specialtyChar?.degree_requirements
-            )}
-          </div>
+          <article className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-7 shadow-sm transition hover:shadow-md">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#182f79] to-[#3b4fc2]" />
+            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#182f79]">
+              {locale === "az" ? "Proqram tələbləri" : "Program requirements"}
+            </h3>
+            <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-gray-700">
+              {Array.isArray(chars.degree_requirements)
+                ? chars.degree_requirements.join("\n")
+                : chars.degree_requirements || "—"}
+            </p>
+          </article>
         </div>
-      </div>
-    </section>
+      ) : (
+        <EmptyState
+          message={
+            locale === "az"
+              ? "Hələ ki bu ixtisas üçün ümumi məlumat əlavə edilməyib."
+              : "No overview information has been added for this specialty yet."
+          }
+        />
+      )}
+    </SpecialtyShell>
   );
 }
