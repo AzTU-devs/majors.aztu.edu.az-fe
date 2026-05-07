@@ -19,8 +19,8 @@ export default function SubjectsSillabus() {
     const [subjectDetails, setSubjectDetails] = useState<SubjectDetails>();
 
     useEffect(() => {
-        getCloBySubjectCode(subjectCode || "")
-            .then(setClos);
+        getCloBySubjectCode(subjectCode || "", locale)
+            .then((res) => setClos(Array.isArray(res) ? res : []));
         getSubjectDetails(subjectCode, locale)
             .then(setSubjectDetails)
         getLiteratures(subjectCode || "")
@@ -33,7 +33,7 @@ export default function SubjectsSillabus() {
                     setLiteratures([]);
                 }
             });
-    }, [subjectCode]);
+    }, [subjectCode, locale]);
 
     console.log(literatures);
 

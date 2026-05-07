@@ -35,6 +35,26 @@ export const getSpecialtiesByCafedra = async (cafedraCode: string, token: string
     }
 }
 
+export const getSpecialtiesByCafedraPublic = async (
+    cafedraCode: string,
+    lang_code: string,
+    start: number = 0,
+    end: number = 100,
+) => {
+    try {
+        const response = await apiClient.get(
+            `/api/specialties/${cafedraCode}?lang=${lang_code}&start=${start}&end=${end}`
+        );
+
+        if (response.data.statusCode === 200) {
+            return response.data.specialties as Specialty[];
+        }
+        return [] as Specialty[];
+    } catch (err) {
+        return [] as Specialty[];
+    }
+};
+
 export const getAllSpecialties = async (lang_code: string, search: string) => {
     try {
         const response = await apiClient.get(`/api/specialties?lang_code=${lang_code}&search=${search}`);

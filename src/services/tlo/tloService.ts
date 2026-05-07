@@ -8,16 +8,15 @@ export interface Tlo {
     tlo_content: string;
 }
 
-export const getTloByTopicCode = async (tloCode: string, locale: string) => {
+export const getTloByTopicCode = async (tloCode: string, locale: string): Promise<Tlo[]> => {
     try {
         const response = await apiClient.get(`/api/tlo/${tloCode}?lang=${locale}`);
 
-        if (response.data.statusCode === 200) {
+        if (response.data.statusCode === 200 && Array.isArray(response.data.tlos)) {
             return response.data.tlos;
-        } else if (response.data.statusCode === 204) {
-            return "NO CONTENT";
         }
+        return [];
     } catch (err) {
-        return "ERROR";
+        return [];
     }
 };

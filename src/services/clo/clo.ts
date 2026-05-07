@@ -1,7 +1,5 @@
 import apiClient from "../../util/apiClient";
 
-const lang_code = "az";
-
 export interface CloPayload {
     subject_code: string;
     clo_content: string;
@@ -27,23 +25,20 @@ export const createClo = async (cloPayload: CloPayload) => {
     }
 }
 
-export const getCloBySubjectCode = async (subjectCode: string) => {
+export const getCloBySubjectCode = async (
+    subjectCode: string,
+    lang_code: string = "az"
+): Promise<Clo[]> => {
     try {
-        const response = await apiClient.get(`/api/clo/${subjectCode}?lang=${lang_code}`);
+        const response = await apiClient.get(
+            `/api/clo/${subjectCode}?lang=${lang_code}`
+        );
 
-        console.log(response, subjectCode);
-
-        if (response.data.status_code === 200) {
+        if (response.data.status_code === 200 && Array.isArray(response.data.clos)) {
             return response.data.clos;
-        } else if (response.data.status_code === 204) {
-            return "NO CONTENT";
         }
-    } catch (err: any) {
-        const status = err.response?.status;
-        if (status === 404) {
-            return "NOT_FOUND";
-        } else {
-            return "ERROR";
-        }
+        return [];
+    } catch {
+        return [];
     }
-}
+};

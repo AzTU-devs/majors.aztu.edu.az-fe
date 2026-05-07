@@ -42,14 +42,13 @@ export default function SubjectMatchTable() {
                     <tr>
                         <th></th>
                         {plos.map((plo, index) => (
-                            <>
                             <th
-                                key={index}
+                                key={plo.id ?? index}
                                 className="border px-4 py-3 text-center"
                                 style={{ backgroundColor: '#182f79', color: '#fff' }}
                             >
                                 {plo.plo_content}
-                            </th></>
+                            </th>
                         ))}
                     </tr>
                 </thead>

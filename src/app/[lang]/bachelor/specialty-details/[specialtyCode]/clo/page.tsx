@@ -41,7 +41,7 @@ export default function Page() {
       const map: Record<string, any[]> = {};
       await Promise.all(
         subs.map(async (s) => {
-          const r: any = await getCloBySubjectCode(s.subject_code);
+          const r = await getCloBySubjectCode(s.subject_code, locale);
           map[s.subject_code] = Array.isArray(r) ? r : [];
         })
       );

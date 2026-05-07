@@ -49,15 +49,12 @@ export default function Tlos({ specialtyCode, topicCode }: { specialtyCode: stri
     useEffect(() => {
         setLoading(true);
         getTloByTopicCode(topicCode, locale)
-            .then(setTlos)
+            .then((res) => setTlos(Array.isArray(res) ? res : []))
             .finally(() => {
                 setLoading(false);
             });
         setSubLos(defaultSubLos);
-    }, [locale]);
-
-    console.log(tlos);
-    console.log("test");
+    }, [locale, topicCode]);
 
     const navItems = [
         { href: "program-learning-outcomes", az: "Proqram Təlim məqsədləri", en: "Program learning outcomes" },
@@ -102,18 +99,33 @@ export default function Tlos({ specialtyCode, topicCode }: { specialtyCode: stri
                     <h2 className="mt-6 text-[#182f79] text-[20px] font-semibold w-full flex justify-center items-center mb-[10px]">
                         {locale === "az" ? "Fənnin təlim nəticələri" : "Subject learning outcomes"}
                     </h2>
-                    <ol className="mt-4 flex flex-wrap justify-between list-decimal list-inside w-full">
-                        {!tlos || tlos.map((tlo, index) => (
-                            <li
-                                key={index}
-                                className="border border-[rgba(0,0,0,0.2)] border-t-[#182f79] shadow-md hover:shadow-lg transition-shadow border-t-4 text-[#182f79] transition-colors duration-300 p-4 rounded-xl flex flex-col w-[calc(50%-8px)] mb-4"
-                            >
-                                <div className="flex-1 font-bold flex justify-center items-center text-center">
-                                    {index + 1}.{tlo.tlo_content}
-                                </div>
-                            </li>
-                        ))}
-                    </ol>
+                    {loading ? (
+                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="h-20 bg-gray-200 rounded-xl animate-pulse" />
+                            ))}
+                        </div>
+                    ) : !Array.isArray(tlos) || tlos.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 gap-2 text-[#64748b]">
+                            <span className="text-4xl">📭</span>
+                            <p className="font-medium text-[15px]">
+                                {locale === "az" ? "Təlim nəticəsi tapılmadı" : "No learning outcomes found"}
+                            </p>
+                        </div>
+                    ) : (
+                        <ol className="mt-4 flex flex-wrap justify-between list-decimal list-inside w-full">
+                            {tlos.map((tlo, index) => (
+                                <li
+                                    key={index}
+                                    className="border border-[rgba(0,0,0,0.2)] border-t-[#182f79] shadow-md hover:shadow-lg transition-shadow border-t-4 text-[#182f79] transition-colors duration-300 p-4 rounded-xl flex flex-col w-[calc(50%-8px)] mb-4"
+                                >
+                                    <div className="flex-1 font-bold flex justify-center items-center text-center">
+                                        {index + 1}.{tlo.tlo_content}
+                                    </div>
+                                </li>
+                            ))}
+                        </ol>
+                    )}
                 </div>
             </section>
         </>

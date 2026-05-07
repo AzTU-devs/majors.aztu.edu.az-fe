@@ -29,12 +29,17 @@ export const getCafedras = async () => {
 
 export const getCafedrasByFaculty = async (
     faculty_code: string,
+    lang: string = lang_code,
 ) => {
-    const response = await apiClient.get(`/api/cafedras/${faculty_code}?lang=${lang_code}`);
+    try {
+        const response = await apiClient.get(`/api/cafedras/${faculty_code}?lang=${lang}`);
 
-    if (response.data.status_code === 200) {
-        return response.data.cafedras;
-    } else {
-        return "NOT FOUND";
+        if (response.data.status_code === 200) {
+            return response.data.cafedras;
+        } else {
+            return "NOT FOUND";
+        }
+    } catch (e) {
+        return "ERROR";
     }
 };

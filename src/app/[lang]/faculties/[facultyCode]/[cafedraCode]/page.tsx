@@ -1,0 +1,180 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import Footer from "@/components/footer/Footer";
+import Header from "@/components/header/Header";
+import PageTitle from "@/components/pageTitle/PageTitle";
+import { Cafedra, getCafedrasByFaculty } from "@/services/cafedra/cafedraService";
+import {
+    Specialty,
+    getSpecialtiesByCafedraPublic,
+} from "@/services/specialty/specialtyService";
+
+export type Locale = "az" | "en";
+
+export default function Page() {
+    const params = useParams();
+    const locale: Locale = useSelector((state: RootState) => state.locale.value);
+
+    const facultyCodeParam = params.facultyCode;
+    const cafedraCodeParam = params.cafedraCode;
+    const facultyCode: string = Array.isArray(facultyCodeParam)
+        ? facultyCodeParam[0]
+        : facultyCodeParam || "";
+    const cafedraCode: string = Array.isArray(cafedraCodeParam)
+        ? cafedraCodeParam[0]
+        : cafedraCodeParam || "";
+
+    const [loading, setLoading] = useState(false);
+    const [specialties, setSpecialties] = useState<Specialty[]>([]);
+    const [cafedraName, setCafedraName] = useState("");
+
+    useEffect(() => {
+        if (!cafedraCode) return;
+        setLoading(true);
+
+        if (facultyCode) {
+            getCafedrasByFaculty(facultyCode, locale).then((res) => {
+                if (Array.isArray(res)) {
+                    const match = (res as Cafedra[]).find(
+                        (c) => c.cafedra_code === cafedraCode
+                    );
+                    if (match) setCafedraName(match.cafedra_name);
+                }
+            });
+        }
+
+        getSpecialtiesByCafedraPublic(cafedraCode, locale)
+            .then((res) => setSpecialties(Array.isArray(res) ? res : []))
+            .finally(() => setLoading(false));
+    }, [facultyCode, cafedraCode, locale]);
+
+    return (
+        <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-grow bg-[#f1f5f9] dark:bg-slate-900">
+                <PageTitle
+                    category={
+                        cafedraName ||
+                        (locale === "az" ? "Kafedra" : "Department")
+                    }
+                    title={
+                        locale === "az"
+                            ? "Kafedranın ixtisasları"
+                            : "Specialties of the department"
+                    }
+                    subtitle={
+                        locale === "az"
+                            ? "Bu kafedraya aid bütün ixtisaslar"
+                            : "All specialties under this department"
+                    }
+                />
+                <section className="max-w-6xl mx-auto w-full flex flex-col gap-5 px-4 md:px-8 py-8 md:py-10">
+                    <nav className="text-[13px] text-[#64748b] dark:text-slate-400">
+                        <Link
+                            href={`/${locale}/faculties`}
+                            className="hover:text-[#182f79] dark:hover:text-blue-400"
+                        >
+                            {locale === "az" ? "Fakültələr" : "Faculties"}
+                        </Link>
+                        <span className="mx-2">/</span>
+                        <Link
+                            href={`/${locale}/faculties/${facultyCode}`}
+                            className="hover:text-[#182f79] dark:hover:text-blue-400"
+                        >
+                            {locale === "az" ? "Kafedralar" : "Departments"}
+                        </Link>
+                        <span className="mx-2">/</span>
+                        <span className="text-[#1e293b] dark:text-slate-100 font-medium">
+                            {cafedraName || cafedraCode}
+                        </span>
+                    </nav>
+
+                    <div className="min-h-[200px] w-full">
+                        {!loading && specialties.length > 0 && (
+                            <p className="text-[13px] text-[#64748b] dark:text-slate-400 mb-4 font-medium">
+                                {specialties.length}{" "}
+                                {locale === "az"
+                                    ? "ixtisas tapıldı"
+                                    : "specialties found"}
+                            </p>
+                        )}
+
+                        {loading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {Array.from({ length: 8 }).map((_, index) => (
+                                    <div
+                                        key={index}
+                                        className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-[#e2e8f0] dark:border-slate-700 animate-pulse"
+                                    >
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="w-9 h-9 rounded-full bg-gray-100 flex-shrink-0" />
+                                            <div className="h-4 bg-gray-200 rounded w-2/3" />
+                                        </div>
+                                        <div className="h-3 bg-gray-100 rounded w-1/4 ml-12" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : specialties.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-40 gap-3 text-[#64748b] dark:text-slate-400">
+                                <span className="text-4xl">🔍</span>
+                                <p className="font-medium text-[15px]">
+                                    {locale === "az"
+                                        ? "Nəticə tapılmadı"
+                                        : "No results found"}
+                                </p>
+                                <p className="text-[13px] text-[#94a3b8]">
+                                    {locale === "az"
+                                        ? "Bu kafedrada ixtisas yoxdur"
+                                        : "This department has no specialties"}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {specialties.map((specialty, idx) => (
+                                    <Link
+                                        key={specialty.specialty_code}
+                                        href={`/${locale}/bachelor/specialty-details/${specialty.specialty_code}`}
+                                        className="group bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-[#e2e8f0] dark:border-slate-700 hover:border-[#182f79]/25 dark:hover:border-blue-400/25 hover:shadow-md hover:bg-blue-50/30 dark:hover:bg-slate-700/30 transition-all duration-200 flex items-center gap-3.5"
+                                    >
+                                        <div className="w-10 h-10 rounded-full bg-[#182f79]/8 flex items-center justify-center text-[#182f79] text-[12px] font-bold flex-shrink-0 group-hover:bg-[#182f79] group-hover:text-white transition-colors duration-200">
+                                            {String(idx + 1).padStart(2, "0")}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-semibold text-[#1e293b] dark:text-slate-100 text-[14px] leading-snug group-hover:text-[#182f79] dark:group-hover:text-blue-400 transition-colors duration-200">
+                                                {specialty.specialty_name}
+                                            </p>
+                                            <span className="inline-block mt-1 text-[11px] font-semibold text-[#182f79] border border-[#182f79]/25 bg-[#182f79]/5 px-2 py-0.5 rounded-full">
+                                                {specialty.specialty_code}
+                                            </span>
+                                        </div>
+
+                                        <svg
+                                            className="w-4 h-4 text-[#cbd5e1] group-hover:text-[#182f79] group-hover:translate-x-0.5 transition-all duration-200 flex-shrink-0"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9 5l7 7-7 7"
+                                            />
+                                        </svg>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </section>
+            </main>
+            <Footer />
+        </div>
+    );
+}

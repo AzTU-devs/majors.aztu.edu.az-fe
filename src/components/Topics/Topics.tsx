@@ -11,6 +11,7 @@ export interface TopicPropInterface {
     subjectCode: string;
     locale: string;
     specialtyCode: string;
+    loading?: boolean;
 }
 
 export type Locale = "az" | "en";
@@ -33,9 +34,9 @@ const topicTypeBadge = (type: number, locale: string) => {
     );
 };
 
-export default function Topics({ topics, subjectCode, locale, specialtyCode }: TopicPropInterface) {
+export default function Topics({ topics, subjectCode, locale, specialtyCode, loading = false }: TopicPropInterface) {
     const pathname = usePathname();
-    const loading = !topics || topics.length === 0 || !specialtyCode;
+    const isEmpty = !loading && (!topics || topics.length === 0);
 
     const navItems = [
         { href: "program-learning-outcomes", az: "Proqram Təlim məqsədləri", en: "Program learning outcomes" },
@@ -76,6 +77,19 @@ export default function Topics({ topics, subjectCode, locale, specialtyCode }: T
             </nav>
 
             <section className="py-6 px-4 md:px-8 w-full">
+                {isEmpty ? (
+                    <div className="flex flex-col items-center justify-center py-16 gap-3 text-[#64748b] dark:text-slate-400">
+                        <span className="text-5xl">📭</span>
+                        <p className="font-semibold text-[16px] text-[#1e293b] dark:text-slate-100">
+                            {locale === "az" ? "Mövzu tapılmadı" : "No topics found"}
+                        </p>
+                        <p className="text-[13px] text-[#94a3b8]">
+                            {locale === "az"
+                                ? "Bu fənn üçün hələ mövzu əlavə edilməyib"
+                                : "No topics have been added for this subject yet"}
+                        </p>
+                    </div>
+                ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {loading
                         ? [...Array(6)].map((_, i) => (
@@ -143,6 +157,7 @@ export default function Topics({ topics, subjectCode, locale, specialtyCode }: T
                             </div>
                         ))}
                 </div>
+                )}
             </section>
         </>
     );
