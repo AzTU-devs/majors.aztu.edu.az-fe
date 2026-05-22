@@ -9,7 +9,7 @@ import { RootState } from "@/redux/store";
 import Footer from "@/components/footer/Footer";
 import Header from "@/components/header/Header";
 import { useParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 
 export type Locale = "en" | "az";
 
@@ -47,12 +47,12 @@ const features = [
   },
 ];
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.5, ease: "easeOut" },
+    transition: { delay: i * 0.08, duration: 0.5, ease: "easeOut" as const },
   }),
 };
 
