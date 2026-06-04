@@ -8,9 +8,9 @@ export interface Tlo {
     tlo_content: string;
 }
 
-export const getTloByTopicCode = async (tloCode: string, locale: string): Promise<Tlo[]> => {
+export const getTloByTopicCode = async (topicCode: string, locale: string): Promise<Tlo[]> => {
     try {
-        const response = await apiClient.get(`/api/tlo/${tloCode}?lang=${locale}`);
+        const response = await apiClient.get(`/api/tlo/topic/${topicCode}?lang=${locale}`);
 
         if (response.data.statusCode === 200 && Array.isArray(response.data.tlos)) {
             return response.data.tlos;

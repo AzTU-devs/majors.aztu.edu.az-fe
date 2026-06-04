@@ -9,6 +9,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import SchoolIcon from "@mui/icons-material/School";
+import DescriptionIcon from "@mui/icons-material/Description";
 import { RootState } from "@/redux/store";
 import Header from "@/components/header/Header";
 import Footer from "@/components/footer/Footer";
@@ -144,6 +145,28 @@ export default function SubjectDetailPage() {
               </div>
             ))}
           </section>
+
+          {/* Syllabus call-to-action */}
+          <Link
+            href={`${subBase}/syllabus`}
+            className="group flex items-center justify-between gap-4 rounded-2xl border border-[#182f79]/15 bg-gradient-to-r from-[#182f79] to-[#3b4fc2] p-6 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <div className="flex items-center gap-4">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-white/15 ring-1 ring-white/20">
+                <DescriptionIcon sx={{ fontSize: 24 }} />
+              </div>
+              <div>
+                <p className="text-base font-semibold">{t("Fənnin sillabusu", "Subject syllabus")}</p>
+                <p className="text-sm text-white/80">
+                  {t(
+                    "Tam sillabusa baxın: təlim nəticələri, mövzu planı və ədəbiyyat",
+                    "View the full syllabus: outcomes, topic plan and literature"
+                  )}
+                </p>
+              </div>
+            </div>
+            <ArrowForwardIcon className="transition group-hover:translate-x-1" sx={{ fontSize: 22 }} />
+          </Link>
 
           {/* Description */}
           <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
