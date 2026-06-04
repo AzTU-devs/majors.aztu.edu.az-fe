@@ -103,7 +103,7 @@ export default function Topics({ topics, subjectCode, locale, specialtyCode, loa
                                 {/* Card header */}
                                 <div className="px-5 pt-4 pb-3 flex items-start justify-between gap-3 border-b border-[#f1f5f9] dark:border-slate-700">
                                     <div className="flex items-start gap-3">
-                                        <div className="w-7 h-7 rounded-full bg-[#182f79]/8 flex items-center justify-center text-[#182f79] text-[11px] font-bold flex-shrink-0 mt-0.5">
+                                        <div className="w-7 h-7 rounded-full bg-[#182f79]/8 dark:bg-blue-400/10 flex items-center justify-center text-[#182f79] dark:text-blue-300 text-[11px] font-bold flex-shrink-0 mt-0.5">
                                             {index + 1}
                                         </div>
                                         <h3 className="text-[#1e293b] dark:text-slate-100 font-semibold text-[14px] leading-snug">

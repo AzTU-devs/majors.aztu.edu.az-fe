@@ -55,10 +55,22 @@
   --font-mono: var(--font-geist-mono);
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
-  background: var(--background);
+  background: var(--bg-page);
   color: var(--text-main);
   font-family: "Roboto", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Selection */
+::selection {
+  background: rgba(37, 99, 235, 0.22);
+  color: inherit;
 }
 
 /* Smooth scrolling */
@@ -68,18 +80,29 @@ html {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-page);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 3px;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Hide scrollbar utility (for tab strips) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ─── Animated background blobs ─── */
 @keyframes blobFloat {
@@ -94,6 +117,7 @@ html {
   opacity: 0.55;
   pointer-events: none;
   animation: blobFloat 18s ease-in-out infinite;
+  will-change: transform;
 }
 .blob.blob-2 { animation-duration: 22s; animation-delay: -6s; }
 .blob.blob-3 { animation-duration: 26s; animation-delay: -12s; }
@@ -110,6 +134,20 @@ html {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: gradientShift 7s ease-in-out infinite;
+}
+
+/* Brand gradient text (on light surfaces) */
+.gradient-brand {
+  background: linear-gradient(120deg, #182f79 0%, #2563eb 50%, #3b4fc2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+[data-theme="dark"] .gradient-brand {
+  background: linear-gradient(120deg, #93c5fd 0%, #60a5fa 50%, #c7d2fe 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* ─── Subtle floating motion for hero artwork ─── */
@@ -143,3 +181,36 @@ html {
   50%      { transform: translateY(8px); opacity: 1;   }
 }
 .scroll-cue { animation: scrollNudge 2.2s ease-in-out infinite; }
+
+/* ─── Reusable surface / card primitives ─── */
+.surface-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 8px 30px -16px rgba(15, 23, 42, 0.15);
+}
+
+/* Dotted hero overlay */
+.dot-grid {
+  background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ─── Shared entrance animation (no-JS fallback friendly) ─── */
+@keyframes fadeRise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-rise {
+  animation: fadeRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

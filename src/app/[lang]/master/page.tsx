@@ -46,20 +46,20 @@ export default function page() {
           title={locale === "az" ? "Magistr ixtisasları (Təhsil proqramları)" : "Master Specialties"}
           subtitle={locale === "az" ? "Azərbaycan Texniki Universitetinin magistr proqramları" : "Graduate programs at Azerbaijan Technical University"}
         />
-        <section className="max-w-6xl mx-auto w-full px-4 md:px-8 py-8 md:py-10">
-          <p className="text-[13px] text-[#64748b] dark:text-slate-400 mb-5 font-medium">
+        <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+          <p className="mb-5 text-[13px] font-medium text-slate-500 dark:text-slate-400">
             {majors.length} {locale === "az" ? "ixtisas mövcuddur" : "specialties available"}
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {majors.map((major, index) => (
               <div
                 key={index}
-                className="group bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-[#e2e8f0] dark:border-slate-700 hover:border-[#182f79]/25 dark:hover:border-blue-400/25 hover:shadow-md hover:bg-blue-50/30 dark:hover:bg-slate-700/30 transition-all duration-200 flex items-center gap-3.5 cursor-pointer"
+                className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-1 hover:border-[#182f79]/30 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-400/30"
               >
-                <div className="w-10 h-10 rounded-full bg-[#182f79]/8 flex items-center justify-center text-[#182f79] text-[12px] font-bold flex-shrink-0 group-hover:bg-[#182f79] group-hover:text-white transition-colors duration-200">
+                <span className="mb-3 grid h-9 w-9 place-items-center rounded-lg bg-[#182f79]/8 text-[12px] font-bold text-[#182f79] dark:bg-blue-400/10 dark:text-blue-300">
                   {String(index + 1).padStart(2, "0")}
-                </div>
-                <p className="font-semibold text-[#1e293b] dark:text-slate-100 text-[14px] leading-snug group-hover:text-[#182f79] dark:group-hover:text-blue-400 transition-colors duration-200 flex-1">
+                </span>
+                <p className="flex-1 text-[15px] font-bold leading-snug text-[#0E205B] dark:text-white">
                   {major}
                 </p>
               </div>

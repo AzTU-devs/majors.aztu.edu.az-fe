@@ -40,7 +40,7 @@ export default function SpecialtyDetails({ specialtyCode }: Props) {
       {loading ? (
         <div className="grid gap-4 md:grid-cols-2">
           {[0, 1].map((i) => (
-            <div key={i} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div key={i} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
               <Skeleton width="40%" height={28} />
               <Skeleton variant="rectangular" height={120} className="mt-3 rounded" />
             </div>
@@ -48,22 +48,22 @@ export default function SpecialtyDetails({ specialtyCode }: Props) {
         </div>
       ) : chars ? (
         <div className="grid gap-5 md:grid-cols-2">
-          <article className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-7 shadow-sm transition hover:shadow-md">
+          <article className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-7 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#182f79] to-[#3b4fc2]" />
-            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#182f79]">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#182f79] dark:text-blue-300">
               {locale === "az" ? "Proqram deskripsiyası" : "Program description"}
             </h3>
-            <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-gray-700">
+            <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-gray-700 dark:text-slate-300">
               {chars.program_desc || "—"}
             </p>
           </article>
 
-          <article className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-7 shadow-sm transition hover:shadow-md">
+          <article className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-7 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#182f79] to-[#3b4fc2]" />
-            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#182f79]">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#182f79] dark:text-blue-300">
               {locale === "az" ? "Proqram tələbləri" : "Program requirements"}
             </h3>
-            <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-gray-700">
+            <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-gray-700 dark:text-slate-300">
               {Array.isArray(chars.degree_requirements)
                 ? chars.degree_requirements.join("\n")
                 : chars.degree_requirements || "—"}

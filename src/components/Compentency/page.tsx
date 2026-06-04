@@ -34,7 +34,7 @@ export default function CompetencyPage({ specialtyCode }: { specialtyCode: strin
     <SpecialtyShell specialtyCode={specialtyCode} active="competency" subtitle={subtitle}>
       {loading ? (
         <div className="grid gap-3 md:grid-cols-2">
-          {[0,1,2,3].map(i => <Skeleton key={i} variant="rectangular" height={92} className="rounded-2xl" />)}
+          {[0,1,2,3].map(i => <Skeleton key={i} variant="rectangular" height={92} className="rounded-2xl" sx={{ bgcolor: "rgba(148,163,184,.2)" }} />)}
         </div>
       ) : items.length === 0 ? (
         <EmptyState message={locale === "az" ? "Səriştə əlavə edilməyib." : "No competencies yet."} />
@@ -43,16 +43,16 @@ export default function CompetencyPage({ specialtyCode }: { specialtyCode: strin
           {items.map((c, idx) => (
             <div
               key={c.id ?? idx}
-              className="flex items-start gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md"
+              className="flex items-start gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
             >
-              <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-[#182f79]/10 text-[#182f79]">
+              <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-[#182f79]/10 text-[#182f79] dark:bg-blue-400/10 dark:text-blue-300">
                 <EmojiObjectsOutlinedIcon fontSize="small" />
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#182f79]/70">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#182f79]/70 dark:text-blue-300/70">
                   {c.competency_code}
                 </p>
-                <p className="mt-1 text-sm leading-relaxed text-gray-800">
+                <p className="mt-1 text-sm leading-relaxed text-gray-800 dark:text-slate-200">
                   {c.competency_content}
                 </p>
               </div>

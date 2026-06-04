@@ -5,31 +5,29 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
 import { setTheme } from "@/redux/slices/themeSlice";
 
-export default function ThemeToggler() {
+/**
+ * @param onDark  true when the toggler sits on a dark/hero surface (white controls),
+ *                false when it sits on a light surface (dark controls).
+ */
+export default function ThemeToggler({ onDark = false }: { onDark?: boolean }) {
   const dispatch = useDispatch<AppDispatch>();
   const theme = useSelector((state: RootState) => state.theme.value);
   const isDark = theme === "dark";
 
   const toggle = () => dispatch(setTheme(isDark ? "light" : "dark"));
 
-  const buttonClass = isDark
-    ? "bg-white/15 border-white/25 hover:bg-white/25"
-    : "bg-slate-900/10 border-slate-900/20 hover:bg-slate-900/20";
+  const buttonClass = onDark
+    ? "bg-white/15 border-white/25 hover:bg-white/25 text-white"
+    : "bg-[#182f79]/8 border-[#182f79]/15 hover:bg-[#182f79]/15 text-[#182f79]";
 
   return (
     <button
       onClick={toggle}
       aria-label="Toggle theme"
-      className={`flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-sm transition-all duration-200 ${buttonClass}`}
+      className={`flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-sm transition-all duration-200 active:scale-90 ${buttonClass}`}
     >
       {isDark ? (
-        // Sun icon (clicking will switch to light)
-        <svg
-          className="w-4 h-4 text-yellow-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-[18px] h-[18px] text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -38,13 +36,7 @@ export default function ThemeToggler() {
           />
         </svg>
       ) : (
-        // Moon icon (clicking will switch to dark)
-        <svg
-          className="w-4 h-4 text-slate-800"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"

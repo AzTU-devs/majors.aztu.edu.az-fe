@@ -34,9 +34,9 @@ export default function Plo({ specialtyCode }: { specialtyCode: string }) {
       {loading ? (
         <div className="grid gap-4 md:grid-cols-2">
           {[0,1,2,3].map(i => (
-            <div key={i} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-              <Skeleton variant="text" width="60%" />
-              <Skeleton variant="rectangular" height={56} className="mt-2 rounded" />
+            <div key={i} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              <Skeleton variant="text" width="60%" sx={{ bgcolor: "rgba(148,163,184,.2)" }} />
+              <Skeleton variant="rectangular" height={56} className="mt-2 rounded" sx={{ bgcolor: "rgba(148,163,184,.15)" }} />
             </div>
           ))}
         </div>
@@ -47,18 +47,18 @@ export default function Plo({ specialtyCode }: { specialtyCode: string }) {
           {plos.map((p, idx) => (
             <article
               key={p.id ?? idx}
-              className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
             >
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#182f79] to-[#3b4fc2]" />
               <div className="flex items-start gap-4">
-                <span className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-[#182f79]/10 text-sm font-bold text-[#182f79]">
+                <span className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-[#182f79]/10 text-sm font-bold text-[#182f79] dark:bg-blue-400/10 dark:text-blue-300">
                   {idx + 1}
                 </span>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#182f79]/70">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#182f79]/70 dark:text-blue-300/70">
                     {p.plo_code}
                   </p>
-                  <p className="mt-1 text-base leading-relaxed text-gray-800">
+                  <p className="mt-1 text-base leading-relaxed text-gray-800 dark:text-slate-200">
                     {p.plo_content}
                   </p>
                 </div>

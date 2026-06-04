@@ -73,7 +73,7 @@ export default function Page() {
                             : "All specialties under this department"
                     }
                 />
-                <section className="max-w-6xl mx-auto w-full flex flex-col gap-5 px-4 md:px-8 py-8 md:py-10">
+                <section className="max-w-7xl mx-auto w-full flex flex-col gap-5 px-4 sm:px-6 lg:px-8 py-8 md:py-12">
                     <nav className="text-[13px] text-[#64748b] dark:text-slate-400">
                         <Link
                             href={`/${locale}/faculties`}
@@ -105,68 +105,55 @@ export default function Page() {
                         )}
 
                         {loading ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {Array.from({ length: 8 }).map((_, index) => (
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                {Array.from({ length: 9 }).map((_, index) => (
                                     <div
                                         key={index}
-                                        className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-[#e2e8f0] dark:border-slate-700 animate-pulse"
-                                    >
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="w-9 h-9 rounded-full bg-gray-100 flex-shrink-0" />
-                                            <div className="h-4 bg-gray-200 rounded w-2/3" />
-                                        </div>
-                                        <div className="h-3 bg-gray-100 rounded w-1/4 ml-12" />
-                                    </div>
+                                        className="h-[140px] animate-pulse rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
+                                    />
                                 ))}
                             </div>
                         ) : specialties.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-40 gap-3 text-[#64748b] dark:text-slate-400">
+                            <div className="flex h-52 flex-col items-center justify-center gap-3 text-slate-500 dark:text-slate-400">
                                 <span className="text-4xl">🔍</span>
-                                <p className="font-medium text-[15px]">
+                                <p className="text-[15px] font-medium">
                                     {locale === "az"
                                         ? "Nəticə tapılmadı"
                                         : "No results found"}
                                 </p>
-                                <p className="text-[13px] text-[#94a3b8]">
+                                <p className="text-[13px] text-slate-400">
                                     {locale === "az"
                                         ? "Bu kafedrada ixtisas yoxdur"
                                         : "This department has no specialties"}
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                 {specialties.map((specialty, idx) => (
                                     <Link
                                         key={specialty.specialty_code}
                                         href={`/${locale}/bachelor/specialty-details/${specialty.specialty_code}`}
-                                        className="group bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-[#e2e8f0] dark:border-slate-700 hover:border-[#182f79]/25 dark:hover:border-blue-400/25 hover:shadow-md hover:bg-blue-50/30 dark:hover:bg-slate-700/30 transition-all duration-200 flex items-center gap-3.5"
+                                        className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 transition-all duration-200 hover:-translate-y-1 hover:border-[#182f79]/30 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-400/30"
                                     >
-                                        <div className="w-10 h-10 rounded-full bg-[#182f79]/8 flex items-center justify-center text-[#182f79] text-[12px] font-bold flex-shrink-0 group-hover:bg-[#182f79] group-hover:text-white transition-colors duration-200">
-                                            {String(idx + 1).padStart(2, "0")}
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-[#1e293b] dark:text-slate-100 text-[14px] leading-snug group-hover:text-[#182f79] dark:group-hover:text-blue-400 transition-colors duration-200">
-                                                {specialty.specialty_name}
-                                            </p>
-                                            <span className="inline-block mt-1 text-[11px] font-semibold text-[#182f79] border border-[#182f79]/25 bg-[#182f79]/5 px-2 py-0.5 rounded-full">
+                                        <div className="mb-3 flex items-center justify-between">
+                                            <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#182f79]/8 text-[12px] font-bold text-[#182f79] dark:bg-blue-400/10 dark:text-blue-300">
+                                                {String(idx + 1).padStart(2, "0")}
+                                            </span>
+                                            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400">
                                                 {specialty.specialty_code}
                                             </span>
                                         </div>
 
-                                        <svg
-                                            className="w-4 h-4 text-[#cbd5e1] group-hover:text-[#182f79] group-hover:translate-x-0.5 transition-all duration-200 flex-shrink-0"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M9 5l7 7-7 7"
-                                            />
-                                        </svg>
+                                        <h3 className="flex-1 text-[15px] font-bold leading-snug text-[#0E205B] dark:text-white">
+                                            {specialty.specialty_name}
+                                        </h3>
+
+                                        <span className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#182f79] transition-all group-hover:gap-2.5 dark:text-blue-400">
+                                            {locale === "az" ? "Ətraflı bax" : "View details"}
+                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </span>
                                     </Link>
                                 ))}
                             </div>

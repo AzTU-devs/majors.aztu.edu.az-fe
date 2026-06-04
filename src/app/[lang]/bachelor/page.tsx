@@ -29,7 +29,7 @@ export default function page() {
           title={locale === "az" ? "Bakalavr ixtisasları (Təhsil proqramları)" : "Bachelor Specialties"}
           subtitle={locale === "az" ? "Azərbaycan Texniki Universitetinin bakalavr proqramları" : "Undergraduate programs at Azerbaijan Technical University"}
         />
-        <section className="max-w-6xl mx-auto w-full flex flex-col gap-5 px-4 md:px-8 py-8 md:py-10">
+        <section className="max-w-7xl mx-auto w-full flex flex-col gap-5 px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           {/* Search & Filter Panel */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-[#e2e8f0] dark:border-slate-700 p-5">
             <label className="block text-[11px] uppercase tracking-[0.12em] text-[#64748b] dark:text-slate-400 font-semibold mb-2">

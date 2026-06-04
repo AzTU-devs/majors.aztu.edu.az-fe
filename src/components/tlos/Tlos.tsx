@@ -83,7 +83,7 @@ export default function Tlos({ specialtyCode, topicCode }: { specialtyCode: stri
                         <Link
                             key={item.href}
                             href={`/${locale}/bachelor/specialty-details/${specialtyCode}/subjects/PR001/${item.href}`}
-                            className={`px-4 py-2 rounded-lg border border-gray-300 text-gray-700 transition ${isActive ? "bg-[#182f79] text-white" : "hover:bg-[#182f79] hover:text-white"
+                            className={`px-4 py-2 rounded-lg border border-gray-300 text-gray-700 transition dark:border-slate-700 dark:text-slate-300 ${isActive ? "bg-[#182f79] text-white" : "hover:bg-[#182f79] hover:text-white"
                                 }`}
                         >
                             {locale === "az" ? item.az : item.en}
@@ -96,17 +96,17 @@ export default function Tlos({ specialtyCode, topicCode }: { specialtyCode: stri
                     {/* <div className="flex justify-center items-center text-[#182f79] text-[20px] font-bold mt-[40px]">
                         {loading ? <Skeleton width={200} /> : `${specialtyName} (${specialtyCode})`}
                     </div> */}
-                    <h2 className="mt-6 text-[#182f79] text-[20px] font-semibold w-full flex justify-center items-center mb-[10px]">
+                    <h2 className="mt-6 text-[#182f79] dark:text-blue-300 text-[20px] font-semibold w-full flex justify-center items-center mb-[10px]">
                         {locale === "az" ? "Fənnin təlim nəticələri" : "Subject learning outcomes"}
                     </h2>
                     {loading ? (
                         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                             {[...Array(4)].map((_, i) => (
-                                <div key={i} className="h-20 bg-gray-200 rounded-xl animate-pulse" />
+                                <div key={i} className="h-20 bg-gray-200 dark:bg-slate-700 rounded-xl animate-pulse" />
                             ))}
                         </div>
                     ) : !Array.isArray(tlos) || tlos.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-10 gap-2 text-[#64748b]">
+                        <div className="flex flex-col items-center justify-center py-10 gap-2 text-[#64748b] dark:text-slate-400">
                             <span className="text-4xl">📭</span>
                             <p className="font-medium text-[15px]">
                                 {locale === "az" ? "Təlim nəticəsi tapılmadı" : "No learning outcomes found"}
@@ -117,7 +117,7 @@ export default function Tlos({ specialtyCode, topicCode }: { specialtyCode: stri
                             {tlos.map((tlo, index) => (
                                 <li
                                     key={index}
-                                    className="border border-[rgba(0,0,0,0.2)] border-t-[#182f79] shadow-md hover:shadow-lg transition-shadow border-t-4 text-[#182f79] transition-colors duration-300 p-4 rounded-xl flex flex-col w-[calc(50%-8px)] mb-4"
+                                    className="border border-[rgba(0,0,0,0.2)] dark:border-slate-700 border-t-[#182f79] dark:bg-slate-800 shadow-md hover:shadow-lg transition-shadow border-t-4 text-[#182f79] dark:text-blue-300 transition-colors duration-300 p-4 rounded-xl flex flex-col w-[calc(50%-8px)] mb-4"
                                 >
                                     <div className="flex-1 font-bold flex justify-center items-center text-center">
                                         {index + 1}.{tlo.tlo_content}

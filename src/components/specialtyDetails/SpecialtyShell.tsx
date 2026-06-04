@@ -51,38 +51,34 @@ export default function SpecialtyShell({ specialtyCode, active, children, subtit
   }, [specialtyCode, locale]);
 
   return (
-    <div className="bg-gradient-to-b from-[#f5f7ff] via-white to-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Hero */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#182f79] via-[#1f3a96] to-[#3b4fc2] text-white">
-        <div className="absolute inset-0 opacity-[0.08]"
-          style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "24px 24px" }}
-        />
-        <div className="absolute -top-32 -right-32 h-[420px] w-[420px] rounded-full bg-white/10 blur-3xl" />
+      <div className="relative overflow-hidden border-b border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+        <div className="pointer-events-none absolute -top-32 right-0 h-80 w-80 rounded-full bg-[#182f79]/5 blur-3xl dark:bg-blue-500/10" />
 
-        <div className="relative mx-auto max-w-6xl px-6 py-12 lg:py-16 lg:px-10">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/85 ring-1 ring-white/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-white" />
+        <div className="relative mx-auto max-w-6xl px-6 py-12 md:py-16 lg:px-10">
+          <span className="mb-3 inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.15em] text-[#2563eb] dark:text-blue-400">
             {locale === "az" ? "Bakalavr ixtisası" : "Bachelor specialty"}
           </span>
 
-          <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+          <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-[#0E205B] dark:text-white md:text-[40px]">
             {loading ? (
               <span className="inline-block">
-                <Skeleton variant="text" width={420} height={44} sx={{ bgcolor: "rgba(255,255,255,.18)" }} />
+                <Skeleton variant="text" width={420} height={44} sx={{ bgcolor: "rgba(148,163,184,.2)" }} />
               </span>
             ) : (
               name || (locale === "az" ? "İxtisas" : "Specialty")
             )}
           </h1>
 
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-white/80">
-            <span className="rounded-lg bg-white/15 px-3 py-1 font-mono text-xs ring-1 ring-white/20">
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+            <span className="rounded-lg border border-slate-200 bg-white px-3 py-1 font-mono text-xs text-[#182f79] dark:border-slate-700 dark:bg-slate-800 dark:text-blue-300">
               {specialtyCode}
             </span>
             {subtitle && (
               <>
-                <span className="text-white/40">/</span>
-                <span className="font-medium text-white/95">{subtitle}</span>
+                <span className="text-slate-300 dark:text-slate-600">/</span>
+                <span className="font-medium text-slate-700 dark:text-slate-200">{subtitle}</span>
               </>
             )}
           </div>
@@ -90,8 +86,8 @@ export default function SpecialtyShell({ specialtyCode, active, children, subtit
       </div>
 
       {/* Sticky tab nav */}
-      <div className="sticky top-0 z-30 border-b border-gray-200 bg-white/90 backdrop-blur">
-        <nav className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-4 py-3 lg:px-10">
+      <div className="sticky top-16 z-30 border-b border-gray-200 bg-white/85 backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/85">
+        <nav className="no-scrollbar mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-4 py-3 lg:px-10">
           {NAV.map((item) => {
             const href = `/${locale}/bachelor/specialty-details/${specialtyCode}${item.href ? `/${item.href}` : ""}`;
             const isActive =
@@ -103,8 +99,8 @@ export default function SpecialtyShell({ specialtyCode, active, children, subtit
                 href={href}
                 className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition ${
                   isActive
-                    ? "bg-[#182f79] text-white shadow-sm"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ? "bg-[#182f79] text-white shadow-sm dark:bg-blue-600"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                 }`}
               >
                 {locale === "az" ? item.az : item.en}

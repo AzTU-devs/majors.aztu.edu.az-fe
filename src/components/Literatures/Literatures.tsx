@@ -68,7 +68,7 @@ export default function Literatures({ subjectCode }: { subjectCode: string }) {
             </nav>
 
             <section className="py-6 px-4 md:px-8 w-full">
-                <p className="text-center text-[#182f79] font-bold text-[18px] mb-6">
+                <p className="text-center text-[#182f79] dark:text-blue-300 font-bold text-[18px] mb-6">
                     {locale === "az" ? "Ədəbiyyatlar" : "Literatures"}
                 </p>
 
@@ -79,10 +79,10 @@ export default function Literatures({ subjectCode }: { subjectCode: string }) {
                                 key={index}
                                 className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-[#e2e8f0] dark:border-slate-700 animate-pulse flex items-start gap-3.5"
                             >
-                                <div className="w-9 h-9 rounded-full bg-gray-100 flex-shrink-0" />
+                                <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-slate-700 flex-shrink-0" />
                                 <div className="flex-1">
-                                    <Skeleton variant="text" width="80%" height={20} />
-                                    <Skeleton variant="text" width="50%" height={16} style={{ marginTop: 6 }} />
+                                    <Skeleton variant="text" width="80%" height={20} sx={{ bgcolor: "rgba(148,163,184,.2)" }} />
+                                    <Skeleton variant="text" width="50%" height={16} style={{ marginTop: 6 }} sx={{ bgcolor: "rgba(148,163,184,.2)" }} />
                                 </div>
                             </div>
                         ))}
@@ -97,7 +97,7 @@ export default function Literatures({ subjectCode }: { subjectCode: string }) {
                                 rel="noopener noreferrer"
                                 className="group bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-[#e2e8f0] dark:border-slate-700 hover:border-[#182f79]/25 dark:hover:border-blue-400/25 hover:shadow-md hover:bg-blue-50/20 dark:hover:bg-slate-700/20 transition-all duration-200 flex items-start gap-3.5"
                             >
-                                <div className="w-9 h-9 rounded-full bg-[#182f79]/8 flex items-center justify-center text-[#182f79] text-[11px] font-bold flex-shrink-0 group-hover:bg-[#182f79] group-hover:text-white transition-colors duration-200">
+                                <div className="w-9 h-9 rounded-full bg-[#182f79]/8 dark:bg-blue-400/10 flex items-center justify-center text-[#182f79] dark:text-blue-300 text-[11px] font-bold flex-shrink-0 group-hover:bg-[#182f79] group-hover:text-white transition-colors duration-200">
                                     {String(index + 1).padStart(2, "0")}
                                 </div>
                                 <div className="flex-1 min-w-0">

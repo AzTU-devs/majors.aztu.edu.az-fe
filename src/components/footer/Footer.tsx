@@ -4,25 +4,33 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 import EmailIcon from '@mui/icons-material/Email';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
 import AztuLogoLight from "@/../public/assets/aztu-logo-light.png";
 
+export type Locale = "az" | "en";
+
 export default function Footer() {
     const { lang } = useParams();
+    const locale: Locale = useSelector((state: RootState) => state.locale.value);
+    const tr = (az: string, en: string) => (locale === "az" ? az : en);
 
     return (
-        <footer>
-            {/* Top separator gradient */}
+        <footer className="relative overflow-hidden" style={{ background: "linear-gradient(180deg, #182f79 0%, #112368 100%)" }}>
+            {/* Dot-grid texture */}
             <div
-                className="h-px w-full"
-                style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent)" }}
+                className="absolute inset-0 opacity-[0.05] text-white pointer-events-none dot-grid"
+                aria-hidden
+            />
+            {/* Top accent line */}
+            <div
+                className="relative h-px w-full"
+                style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.18), transparent)" }}
             />
 
-            <div
-                className="px-6 md:px-16 py-14"
-                style={{ background: "linear-gradient(180deg, #182f79 0%, #112368 100%)" }}
-            >
+            <div className="relative px-6 md:px-16 py-14">
                 <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
                     {/* Brand */}
                     <div className="md:col-span-1 flex flex-col gap-4">
@@ -33,21 +41,25 @@ export default function Footer() {
                             height={110}
                             className="object-contain"
                         />
-                        <p className="text-white/50 text-[13px] leading-relaxed max-w-[200px]">
-                            Azərbaycan Texniki Universiteti — texniki elmlər sahəsində aparıcı ali təhsil müəssisəsi.
+                        <p className="text-white/50 text-[13px] leading-relaxed max-w-[220px]">
+                            {tr(
+                                "Azərbaycan Texniki Universiteti — texniki elmlər sahəsində aparıcı ali təhsil müəssisəsi.",
+                                "Azerbaijan Technical University — a leading institution of higher education in technical sciences."
+                            )}
                         </p>
                     </div>
 
                     {/* Links */}
                     <div>
                         <h2 className="text-white/40 text-[10px] uppercase tracking-[0.14em] font-semibold mb-4">
-                            Keçidlər
+                            {tr("Keçidlər", "Links")}
                         </h2>
                         <ul className="flex flex-col gap-2.5">
                             {[
-                                { href: `/${lang}/bachelor`, label: "Bakalavr" },
-                                { href: `/${lang}/master`, label: "Magistr" },
-                                { href: `/${lang}/faculties`, label: "Fakültələr" },
+                                { href: `/${lang}/bachelor`, label: tr("Bakalavr", "Bachelor") },
+                                { href: `/${lang}/master`, label: tr("Magistr", "Master") },
+                                { href: `/${lang}/faculties`, label: tr("Fakültələr", "Faculties") },
+                                { href: `/${lang}/contact`, label: tr("Əlaqə", "Contact") },
                             ].map((item) => (
                                 <li key={item.href}>
                                     <Link
@@ -65,7 +77,7 @@ export default function Footer() {
                     {/* Contact */}
                     <div>
                         <h2 className="text-white/40 text-[10px] uppercase tracking-[0.14em] font-semibold mb-4">
-                            Əlaqə
+                            {tr("Əlaqə", "Contact")}
                         </h2>
                         <ul className="flex flex-col gap-2.5">
                             <li>
@@ -93,7 +105,7 @@ export default function Footer() {
                     {/* Phone */}
                     <div>
                         <h2 className="text-white/40 text-[10px] uppercase tracking-[0.14em] font-semibold mb-4">
-                            Telefon
+                            {tr("Telefon", "Phone")}
                         </h2>
                         <ul className="flex flex-col gap-2.5">
                             {["+994125383383", "+994125391305"].map((num) => (
@@ -113,13 +125,16 @@ export default function Footer() {
             </div>
 
             {/* Copyright */}
-            <div className="bg-[#0E205B] py-4 px-6">
-                <div className="max-w-6xl mx-auto flex items-center justify-between">
-                    <p className="text-white/40 text-[12px]">
-                        © {new Date().getFullYear()} Azərbaycan Texniki Universiteti. Bütün hüquqlar qorunur.
+            <div className="relative bg-[#0E205B] py-4 px-6">
+                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center gap-2 justify-between">
+                    <p className="text-white/40 text-[12px] text-center">
+                        © {new Date().getFullYear()} {tr("Azərbaycan Texniki Universiteti. Bütün hüquqlar qorunur.", "Azerbaijan Technical University. All rights reserved.")}
                     </p>
-                    <div className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-400/60" />
+                    <div className="flex items-center gap-1.5">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400/50" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400/70" />
+                        </span>
                         <span className="text-white/30 text-[11px]">aztu.edu.az</span>
                     </div>
                 </div>

@@ -105,7 +105,7 @@ export default function SubjectLo({ specialtyCode }: { specialtyCode: string }) 
             </nav>
 
             <section className="py-6 px-4 md:px-8 w-full">
-                <p className="text-center text-[#182f79] font-bold text-[18px] mb-6">
+                <p className="text-center text-[#182f79] dark:text-blue-300 font-bold text-[18px] mb-6">
                     {locale === "az" ? "Fənnin təlim nəticələri" : "Subject learning outcomes"}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -114,7 +114,7 @@ export default function SubjectLo({ specialtyCode }: { specialtyCode: string }) 
                             key={index}
                             className="group bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-[#e2e8f0] dark:border-slate-700 hover:border-[#182f79]/25 dark:hover:border-blue-400/25 hover:shadow-md hover:bg-blue-50/20 dark:hover:bg-slate-700/20 transition-all duration-200 flex items-start gap-3.5"
                         >
-                            <div className="w-9 h-9 rounded-full bg-[#182f79]/8 flex items-center justify-center text-[#182f79] text-[11px] font-bold flex-shrink-0 group-hover:bg-[#182f79] group-hover:text-white transition-colors duration-200">
+                            <div className="w-9 h-9 rounded-full bg-[#182f79]/8 dark:bg-blue-400/10 flex items-center justify-center text-[#182f79] dark:text-blue-300 text-[11px] font-bold flex-shrink-0 group-hover:bg-[#182f79] group-hover:text-white transition-colors duration-200">
                                 {String(index + 1).padStart(2, "0")}
                             </div>
                             <p className="text-[#1e293b] dark:text-slate-100 text-[14px] leading-relaxed font-medium flex-1">
