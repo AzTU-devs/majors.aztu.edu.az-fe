@@ -18,7 +18,7 @@ export interface LiteraturePayload {
 
 export const getLiteratures = async (subjectCode: string) => {
     try {
-        const response = await apiClient.get(`/api/literature/specialty/${subjectCode}`);
+        const response = await apiClient.get(`/api/literature/subject/${subjectCode}`);
 
         if (response.data.statusCode === 200) {
             return {
