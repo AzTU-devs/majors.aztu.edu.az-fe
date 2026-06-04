@@ -15,6 +15,12 @@ import { getTopics, Topic } from "@/services/topic/topic";
 import { getTloByTopicCode, Tlo } from "@/services/tlo/tloService";
 import { getLiteratures, Literature } from "@/services/literature/literatureService";
 import { getSpecialtyDetails } from "@/services/specialty/specialtyService";
+import {
+  formOfEducationLabel,
+  languageLabel,
+  teachingMethodLabel,
+  parseTeachingMethods,
+} from "@/constants/subjectMeta";
 
 export type Locale = "az" | "en";
 
@@ -185,8 +191,36 @@ export default function SubjectSyllabusPage() {
                   <InfoRow k={t("Semestr", "Semester")} v={label(SEMESTER_LABEL, subject?.semester)} />
                   <InfoRow k={t("Tədris ili", "Year")} v={subject?.year ?? "—"} />
                   <InfoRow k={t("Fənnin tipi", "Subject type")} v={label(STATUS_LABEL, subject?.status)} />
+                  <InfoRow
+                    k={t("Təhsil forması", "Form of education")}
+                    v={formOfEducationLabel(subject?.form_of_education, locale)}
+                  />
+                  <InfoRow
+                    k={t("Tədris dili", "Language of instruction")}
+                    v={languageLabel(subject?.language_of_instruction, locale)}
+                  />
+                  {subject?.in_class_hours && (
+                    <InfoRow
+                      k={t("Auditoriyadaxili saatlar", "In-class hours")}
+                      v={<span className="whitespace-pre-line">{subject.in_class_hours}</span>}
+                    />
+                  )}
                 </div>
               </SectionCard>
+
+              {/* Teaching methods */}
+              {parseTeachingMethods(subject?.teaching_methods).length > 0 && (
+                <SectionCard title={t("Tədris metodları", "Teaching methods")}>
+                  <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {parseTeachingMethods(subject?.teaching_methods).map((k) => (
+                      <li key={k} className="flex items-center gap-2 text-[14px] text-gray-700">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#182f79]" />
+                        {teachingMethodLabel(k, locale)}
+                      </li>
+                    ))}
+                  </ul>
+                </SectionCard>
+              )}
 
               {/* Description */}
               {subject?.subject_description && (
@@ -277,6 +311,34 @@ export default function SubjectSyllabusPage() {
                   </ul>
                 )}
               </SectionCard>
+
+              {/* Assessment */}
+              {subject?.assessment && subject.assessment.length > 0 && (
+                <SectionCard title={t("Qiymətləndirmə haqqında məlumat", "Assessment")}>
+                  <div className="overflow-x-auto rounded-xl border border-gray-100">
+                    <table className="min-w-full border-collapse text-[13px]">
+                      <thead>
+                        <tr className="bg-gray-50 text-left text-[12px] font-semibold text-gray-600">
+                          <th className="border-b border-gray-100 px-3 py-2">{t("Qiymətləndirmə forması", "Form")}</th>
+                          <th className="border-b border-gray-100 px-3 py-2">{t("Açıqlama", "Description")}</th>
+                          <th className="border-b border-gray-100 px-3 py-2 whitespace-nowrap">{t("Bal", "Score")}</th>
+                          <th className="border-b border-gray-100 px-3 py-2 whitespace-nowrap">{t("Uyğun FTN", "Related CLO")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {subject.assessment.map((row, i) => (
+                          <tr key={i} className="align-top">
+                            <td className="border-b border-gray-100 px-3 py-2 font-medium text-gray-800">{row.form}</td>
+                            <td className="border-b border-gray-100 px-3 py-2 text-gray-600">{row.description}</td>
+                            <td className="border-b border-gray-100 px-3 py-2 whitespace-nowrap text-gray-700">{row.score}</td>
+                            <td className="border-b border-gray-100 px-3 py-2 whitespace-nowrap text-gray-700">{row.ftn}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </SectionCard>
+              )}
             </>
           )}
         </div>
