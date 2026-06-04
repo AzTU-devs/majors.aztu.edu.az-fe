@@ -2,10 +2,12 @@ import apiClient from "../../util/apiClient";
 
 const lang_code = "az";
 
+// competency_type: 1 = Peşə (Job), 2 = İxtisas (Specialty)
 export interface Competency {
     id: number;
     specialty_code: string;
     competency_code: string;
+    competency_type: number;
     language_code: string;
     competency_content: string;
 }
