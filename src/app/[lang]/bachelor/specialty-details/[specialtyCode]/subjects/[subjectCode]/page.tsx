@@ -124,7 +124,7 @@ export default function SubjectDetailPage() {
               { label: t("Kredit", "Credits"), value: subject?.credit ?? "—" },
               { label: t("Tələbənin iş yükü", "Student workload"), value: subject?.hours_per_week ?? "—" },
               { label: t("Semestr", "Semester"), value: subject ? SEMESTER_LABEL[subject.semester]?.[locale] ?? subject.semester : "—" },
-              { label: t("Tədris ili", "Year"), value: subject?.year ?? "—" },
+              { label: t("Akademik il", "Academic year"), value: subject?.year ?? "—" },
             ]).map((stat: any, i) => (
               <div
                 key={i}

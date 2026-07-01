@@ -80,7 +80,7 @@ export default function CompetencyMatchTable() {
 
     const groups = [
         { type: 1, az: "Peşə Səriştələri", en: "Job Competencies" },
-        { type: 2, az: "İxtisas Səriştələri", en: "Specialty Competencies" },
+        { type: 2, az: "Ümumi Səriştələr", en: "General Competencies" },
     ];
 
     return (

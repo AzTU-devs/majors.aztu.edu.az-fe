@@ -6,7 +6,7 @@ export interface Subject {
     semester: number;
     hours_per_week: number;
     status: number;
-    year: number;
+    year: string;
     credit: number
 };
 
@@ -17,7 +17,7 @@ export interface SubjectPayload {
     semester: number;
     status: number;
     credit?: number;
-    year: number;
+    year: string;
     hours_per_week?: number;
 };
 
@@ -35,7 +35,7 @@ export interface SubjectDetails {
     semester: number;
     status: number;
     credit?: number;
-    year: number;
+    year: string;
     hours_per_week?: number;
     form_of_education?: number | null;
     language_of_instruction?: number | null;

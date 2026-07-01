@@ -189,7 +189,7 @@ export default function SubjectSyllabusPage() {
                   <InfoRow k={t("Kredit", "Credits")} v={subject?.credit ?? "—"} />
                   <InfoRow k={t("Tələbənin iş yükü", "Student workload")} v={subject?.hours_per_week ?? "—"} />
                   <InfoRow k={t("Semestr", "Semester")} v={label(SEMESTER_LABEL, subject?.semester)} />
-                  <InfoRow k={t("Tədris ili", "Year")} v={subject?.year ?? "—"} />
+                  <InfoRow k={t("Akademik il", "Academic year")} v={subject?.year ?? "—"} />
                   <InfoRow k={t("Fənnin tipi", "Subject type")} v={label(STATUS_LABEL, subject?.status)} />
                   <InfoRow
                     k={t("Təhsil forması", "Form of education")}
