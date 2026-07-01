@@ -258,6 +258,22 @@ export default function SubjectDetailPage() {
                 </div>
                 <ArrowForwardIcon className="text-gray-400 transition group-hover:translate-x-1 group-hover:text-[#182f79]" sx={{ fontSize: 20 }} />
               </Link>
+
+              <Link
+                href={`${subBase}/clo-plo-match-table`}
+                className="group flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#182f79]/8 text-[#182f79]">
+                    <TableChartIcon sx={{ fontSize: 20 }} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">{t("CLO-PLO uyğunluq cədvəli", "CLO-PLO match table")}</p>
+                    <p className="text-xs text-gray-500">{t("Fənn təlim nəticələri-PLO uyğunluğu", "CLO-PLO matching")}</p>
+                  </div>
+                </div>
+                <ArrowForwardIcon className="text-gray-400 transition group-hover:translate-x-1 group-hover:text-[#182f79]" sx={{ fontSize: 20 }} />
+              </Link>
             </div>
           </section>
         </div>
