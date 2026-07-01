@@ -81,7 +81,7 @@ export default function Subjects({ specialtyCode }: { specialtyCode: string }) {
                   <dd className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-slate-200">{sub.credit}</dd>
                 </div>
                 <div>
-                  <dt className="font-medium uppercase tracking-wide">{locale === "az" ? "Saat/həftə" : "Hrs/wk"}</dt>
+                  <dt className="font-medium uppercase tracking-wide">{locale === "az" ? "Tələbənin iş yükü" : "Student workload"}</dt>
                   <dd className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-slate-200">{sub.hours_per_week}</dd>
                 </div>
                 <div>

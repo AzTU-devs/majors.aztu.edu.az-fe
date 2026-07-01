@@ -8,7 +8,6 @@ import Skeleton from "@mui/material/Skeleton";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import TableChartIcon from "@mui/icons-material/TableChart";
-import SchoolIcon from "@mui/icons-material/School";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { RootState } from "@/redux/store";
 import Header from "@/components/header/Header";
@@ -123,7 +122,7 @@ export default function SubjectDetailPage() {
           <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {(loading ? [0, 1, 2, 3] : [
               { label: t("Kredit", "Credits"), value: subject?.credit ?? "—" },
-              { label: t("Saat / həftə", "Hours / week"), value: subject?.hours_per_week ?? "—" },
+              { label: t("Tələbənin iş yükü", "Student workload"), value: subject?.hours_per_week ?? "—" },
               { label: t("Semestr", "Semester"), value: subject ? SEMESTER_LABEL[subject.semester]?.[locale] ?? subject.semester : "—" },
               { label: t("Tədris ili", "Year"), value: subject?.year ?? "—" },
             ]).map((stat: any, i) => (
@@ -239,24 +238,6 @@ export default function SubjectDetailPage() {
                   <div>
                     <p className="font-semibold text-gray-900">{t("Mövzular", "Topics")}</p>
                     <p className="text-xs text-gray-500">{t("Fənn üzrə bütün mövzular", "All topics for this subject")}</p>
-                  </div>
-                </div>
-                <ArrowForwardIcon className="text-gray-400 transition group-hover:translate-x-1 group-hover:text-[#182f79]" sx={{ fontSize: 20 }} />
-              </Link>
-
-              <Link
-                href={`${subBase}/subject-learning-outcomes`}
-                className="group flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#182f79]/8 text-[#182f79]">
-                    <SchoolIcon sx={{ fontSize: 20 }} />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">
-                      {t("Tələbə Təlim Nəticələri", "Student learning outcomes")}
-                    </p>
-                    <p className="text-xs text-gray-500">{t("İxtisas üzrə SLO-lar", "Specialty-level SLOs")}</p>
                   </div>
                 </div>
                 <ArrowForwardIcon className="text-gray-400 transition group-hover:translate-x-1 group-hover:text-[#182f79]" sx={{ fontSize: 20 }} />

@@ -34,7 +34,6 @@ export default function Literatures({ subjectCode }: { subjectCode: string }) {
 
     const navItems = [
         { href: "program-learning-outcomes", az: "Proqram Təlim məqsədləri", en: "Program learning outcomes" },
-        { href: "student-learning-outcomes", az: "Tələbələrin Təlim Nəticələri", en: "Student Learning Outcomes" },
         { href: "graduate-career-opportunities", az: "Məzunların Karyera İmkanları", en: "Graduate Career Opportunities" },
         { href: "competency", az: "Səriştələr", en: "Competencies" },
         { href: "subjects", az: "Kurrikulum", en: "Curriculum" },

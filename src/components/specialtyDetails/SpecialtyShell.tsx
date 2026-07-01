@@ -23,7 +23,6 @@ export type SectionKey =
 const NAV: { key: SectionKey; href: string; az: string; en: string }[] = [
   { key: "overview", href: "", az: "Ümumi məlumat", en: "Overview" },
   { key: "program-learning-outcomes", href: "program-learning-outcomes", az: "Proqram Təlim Məqsədləri", en: "Program Learning Outcomes" },
-  { key: "student-learning-outcomes", href: "student-learning-outcomes", az: "Tələbə Təlim Nəticələri", en: "Student Learning Outcomes" },
   { key: "graduate-career-opportunities", href: "graduate-career-opportunities", az: "Karyera İmkanları", en: "Career Opportunities" },
   { key: "competency", href: "competency", az: "Səriştələr", en: "Competencies" },
   { key: "competency-match-table", href: "competency-match-table", az: "Səriştə uyğunluq cədvəli", en: "Competency matching table" },

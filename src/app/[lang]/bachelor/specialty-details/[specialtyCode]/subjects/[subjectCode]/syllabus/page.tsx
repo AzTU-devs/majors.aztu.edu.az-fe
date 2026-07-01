@@ -187,7 +187,7 @@ export default function SubjectSyllabusPage() {
                 <div className="divide-y divide-gray-100">
                   <InfoRow k={t("Fənn kodu", "Subject code")} v={subjectCode} />
                   <InfoRow k={t("Kredit", "Credits")} v={subject?.credit ?? "—"} />
-                  <InfoRow k={t("Saat / həftə", "Hours / week")} v={subject?.hours_per_week ?? "—"} />
+                  <InfoRow k={t("Tələbənin iş yükü", "Student workload")} v={subject?.hours_per_week ?? "—"} />
                   <InfoRow k={t("Semestr", "Semester")} v={label(SEMESTER_LABEL, subject?.semester)} />
                   <InfoRow k={t("Tədris ili", "Year")} v={subject?.year ?? "—"} />
                   <InfoRow k={t("Fənnin tipi", "Subject type")} v={label(STATUS_LABEL, subject?.status)} />
@@ -205,6 +205,10 @@ export default function SubjectSyllabusPage() {
                       v={<span className="whitespace-pre-line">{subject.in_class_hours}</span>}
                     />
                   )}
+                  <InfoRow
+                    k={t("Auditoriya kənar saatlar", "Out-of-class hours")}
+                    v={<span className="whitespace-pre-line">{subject?.out_of_class_hours ?? "—"}</span>}
+                  />
                 </div>
               </SectionCard>
 
