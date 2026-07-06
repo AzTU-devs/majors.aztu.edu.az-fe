@@ -10,7 +10,7 @@ export const getMatchedPlosBySubject = async (
     subjectCode: string
 ): Promise<SubjectPloMatch[]> => {
     try {
-        const response = await apiClient.get(`/api/match/subject/${subjectCode}`);
+        const response = await apiClient.get(`/api/match/subject/${encodeURIComponent(subjectCode)}`);
         if (response.data.statusCode === 200 && Array.isArray(response.data.data)) {
             return response.data.data;
         }

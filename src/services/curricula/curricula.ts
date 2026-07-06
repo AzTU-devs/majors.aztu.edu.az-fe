@@ -47,7 +47,7 @@ export interface SubjectDetails {
 
 export const getCurriculaBySpecialtyCode = async (specialtyCode: string, start: number, end: number, lang_code: string) => {
     try {
-        const response = await apiClient.get(`/api/curricula/${specialtyCode}/subjects?start=${start}&end=${end}&lang=${lang_code}`);
+        const response = await apiClient.get(`/api/curricula/${encodeURIComponent(specialtyCode)}/subjects?start=${start}&end=${end}&lang=${lang_code}`);
         if (response.data.statusCode === 200) {
             return {
                 "subjects": response.data.subjects,
@@ -67,7 +67,7 @@ export const getCurriculaBySpecialtyCode = async (specialtyCode: string, start: 
 
 export const getSubjectDetails = async (subjectCode: string, lang_code: string) => {
     try {
-        const response = await apiClient.get(`/api/curricula/${subjectCode}?lang=${lang_code}`);
+        const response = await apiClient.get(`/api/curricula/${encodeURIComponent(subjectCode)}?lang=${lang_code}`);
 
         if (response.data.statusCode === 200) {
             return response.data.subject_details;

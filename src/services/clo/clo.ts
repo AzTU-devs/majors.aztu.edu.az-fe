@@ -31,7 +31,7 @@ export const getCloBySubjectCode = async (
 ): Promise<Clo[]> => {
     try {
         const response = await apiClient.get(
-            `/api/clo/${subjectCode}?lang=${lang_code}`
+            `/api/clo/${encodeURIComponent(subjectCode)}?lang=${lang_code}`
         );
 
         if (response.data.status_code === 200 && Array.isArray(response.data.clos)) {

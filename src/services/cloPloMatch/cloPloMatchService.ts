@@ -11,7 +11,7 @@ export const getCloPloMatchesBySubject = async (
 ): Promise<CloPloMatch[]> => {
     try {
         const response = await apiClient.get(
-            `/api/clo-plo-match/subject/${subjectCode}`
+            `/api/clo-plo-match/subject/${encodeURIComponent(subjectCode)}`
         );
         if (response.data.statusCode === 200 && Array.isArray(response.data.data)) {
             return response.data.data;
