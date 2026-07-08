@@ -10,6 +10,8 @@ export const languageLabel = (v: number | null | undefined, locale: Locale) => {
     if (v === 1) return locale === "az" ? "Azərbaycan" : "Azerbaijani";
     if (v === 2) return locale === "az" ? "İngilis" : "English";
     if (v === 3) return locale === "az" ? "Rus" : "Russian";
+    if (v === 4) return locale === "az" ? "Alman" : "German";
+    if (v === 5) return locale === "az" ? "Türk" : "Turkish";
     return "—";
 };
 
