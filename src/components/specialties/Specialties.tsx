@@ -5,7 +5,7 @@ import { RootState } from "@/redux/store";
 import { useEffect, useState } from "react";
 import { getAllSpecialties, Specialty } from "@/services/specialty/specialtyService";
 
-export default function Specialties({ search }: { search: string }) {
+export default function Specialties({ search, degree }: { search: string; degree?: number }) {
     const [loading, setLoading] = useState(false);
     const [specialties, setSpecialties] = useState<Specialty[]>([] as Specialty[]);
     const locale: Locale = useSelector((state: RootState) => state.locale.value);
@@ -14,7 +14,7 @@ export default function Specialties({ search }: { search: string }) {
         const timeout = setTimeout(async () => {
             setLoading(true);
             try {
-                const res = await getAllSpecialties(locale, search);
+                const res = await getAllSpecialties(locale, search, degree);
                 setSpecialties(Array.isArray(res) ? res : []);
             } catch (err) {
                 console.error("Error fetching specialties:", err);
@@ -25,7 +25,7 @@ export default function Specialties({ search }: { search: string }) {
         }, 300);
 
         return () => clearTimeout(timeout);
-    }, [search, locale]);
+    }, [search, locale, degree]);
 
     return (
         <div className="min-h-[200px] w-full">

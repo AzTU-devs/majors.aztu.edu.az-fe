@@ -45,7 +45,7 @@ export default function page() {
           </div>
 
           {/* Results */}
-          <Specialties search={search} />
+          <Specialties search={search} degree={1} />
         </section>
       </main>
       <Footer />

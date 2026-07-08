@@ -4,6 +4,7 @@ export interface Specialty {
     cafedra_name: string;
     specialty_name: string;
     specialty_code: string;
+    degree?: number;
 }
 
 export interface SpecialtyPayload {
@@ -55,9 +56,10 @@ export const getSpecialtiesByCafedraPublic = async (
     }
 };
 
-export const getAllSpecialties = async (lang_code: string, search: string) => {
+export const getAllSpecialties = async (lang_code: string, search: string, degree?: number) => {
     try {
-        const response = await apiClient.get(`/api/specialties?lang_code=${lang_code}&search=${search}`);
+        const degreeQuery = degree ? `&degree=${degree}` : "";
+        const response = await apiClient.get(`/api/specialties?lang_code=${lang_code}&search=${search}${degreeQuery}`);
         if (response.data.statusCode === 200) {
             return response.data.specialties;
         } else if (response.data.statusCode === 204) {
