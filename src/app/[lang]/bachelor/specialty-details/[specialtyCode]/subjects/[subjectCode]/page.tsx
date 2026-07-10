@@ -18,8 +18,8 @@ import { getCloBySubjectCode, Clo } from "@/services/clo/clo";
 export type Locale = "az" | "en";
 
 const SEMESTER_LABEL: Record<number, { az: string; en: string }> = {
-  1: { az: "Yaz", en: "Spring" },
-  2: { az: "Payız", en: "Autumn" },
+  1: { az: "Payız", en: "Autumn" },
+  2: { az: "Yaz", en: "Spring" },
 };
 
 const STATUS_LABEL: Record<number, { az: string; en: string }> = {

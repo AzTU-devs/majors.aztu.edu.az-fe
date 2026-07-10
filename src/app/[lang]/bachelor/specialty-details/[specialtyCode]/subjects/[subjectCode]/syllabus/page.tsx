@@ -25,8 +25,8 @@ import {
 export type Locale = "az" | "en";
 
 const SEMESTER_LABEL: Record<number, { az: string; en: string }> = {
-  1: { az: "Yaz semestri", en: "Spring semester" },
-  2: { az: "Payız semestri", en: "Autumn semester" },
+  1: { az: "Payız semestri", en: "Autumn semester" },
+  2: { az: "Yaz semestri", en: "Spring semester" },
 };
 
 const STATUS_LABEL: Record<number, { az: string; en: string }> = {

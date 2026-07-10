@@ -54,7 +54,7 @@ export default function SubjectsSillabus() {
                             <th className="border border-gray-300 p-3">Fənn kodu: {subjectCode}</th>
                             <th className="border border-gray-300 p-3">Tələbə işi - Yük (cəmi): 240 saat</th>
                             <th className="border border-gray-300 p-3">Kredit: {subjectDetails?.credit}</th>
-                            <th className="border border-gray-300 p-3">Semestr: {subjectDetails?.semester === 1 ? "Yaz semesteri" : "Payız semesteri"}</th>
+                            <th className="border border-gray-300 p-3">Semestr: {subjectDetails?.semester === 1 ? "Payız semesteri" : "Yaz semesteri"}</th>
                             <th className="border border-gray-300 p-3">Müddət: 1 il</th>
                         </tr>
                     </thead>
