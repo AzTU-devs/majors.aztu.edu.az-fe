@@ -31,7 +31,7 @@ export default function FacultyCategory() {
   }
 
   const chip = (active: boolean) =>
-    `flex-shrink-0 rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold border transition-all duration-200 ${
+    `flex-shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold border transition-all duration-200 ${
       active
         ? "bg-[#182f79] text-white border-[#182f79] shadow-sm shadow-[#182f79]/25"
         : "bg-white dark:bg-slate-700/40 text-[#475569] dark:text-slate-300 border-[#e2e8f0] dark:border-slate-600 hover:border-[#182f79]/40 hover:text-[#182f79] dark:hover:text-blue-300"
@@ -49,7 +49,7 @@ export default function FacultyCategory() {
           onClick={() => setSelected(faculty.faculty_code)}
           className={chip(selected === faculty.faculty_code)}
         >
-          {faculty.faculty_code.toUpperCase()}
+          {faculty.faculty_name}
         </button>
       ))}
     </div>
