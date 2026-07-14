@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import Footer from "@/components/footer/Footer";
@@ -13,7 +14,11 @@ import FacultyCategory from "@/components/facultyCategory/FacultyCategoty";
 export type Locale = "az" | "en";
 
 export default function page() {
-  const locale: Locale = useSelector((state: RootState) => state.locale.value);
+  const params = useParams();
+  const urlLang = Array.isArray(params?.lang) ? params.lang[0] : params?.lang;
+  const reduxLocale = useSelector((state: RootState) => state.locale.value);
+  // URL is the source of truth for language; fall back to the Redux value.
+  const locale: Locale = urlLang === "en" ? "en" : urlLang === "az" ? "az" : reduxLocale;
   const [search, setSearch] = useState("");
 
   const handleSearch = (value: string) => {
