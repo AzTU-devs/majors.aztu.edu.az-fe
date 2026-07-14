@@ -24,9 +24,9 @@ export default function UnlockPage() {
                 window.location.replace(next.startsWith("/") ? next : "/");
                 return;
             }
-            setError("Parol yanlışdır. Yenidən cəhd edin.");
+            setError("Incorrect password. Please try again.");
         } catch {
-            setError("Xəta baş verdi. Yenidən cəhd edin.");
+            setError("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -38,15 +38,15 @@ export default function UnlockPage() {
                 <div className="mb-6 text-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                        src="/aztu-logo-dark.webp"
+                        src="/assets/aztu_logo.png"
                         alt="AZTU"
-                        className="mx-auto mb-4 h-14 w-14 object-contain"
+                        className="mx-auto mb-4 h-16 w-auto object-contain"
                     />
                     <h1 className="text-lg font-semibold text-[#0E205B]">
-                        Giriş məhduddur
+                        Restricted access
                     </h1>
                     <p className="mt-1 text-sm text-gray-500">
-                        Davam etmək üçün parolu daxil edin.
+                        Enter the password to continue.
                     </p>
                 </div>
 
@@ -56,7 +56,7 @@ export default function UnlockPage() {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Parol"
+                            placeholder="Password"
                             autoFocus
                             className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#182f79] focus:ring-2 focus:ring-[#182f79]/20"
                         />
@@ -71,7 +71,7 @@ export default function UnlockPage() {
                         disabled={loading}
                         className="w-full rounded-xl bg-[#182f79] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1f3a96] disabled:opacity-60"
                     >
-                        {loading ? "Yoxlanılır..." : "Daxil ol"}
+                        {loading ? "Checking..." : "Continue"}
                     </button>
                 </form>
             </div>

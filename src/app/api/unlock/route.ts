@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     if (password !== SITE_PASSWORD) {
         return NextResponse.json(
-            { ok: false, message: "Parol yanlışdır." },
+            { ok: false, message: "Incorrect password." },
             { status: 401 }
         );
     }
