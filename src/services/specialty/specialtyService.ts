@@ -59,7 +59,8 @@ export const getSpecialtiesByCafedraPublic = async (
 export const getAllSpecialties = async (lang_code: string, search: string, degree?: number) => {
     try {
         const degreeQuery = degree ? `&degree=${degree}` : "";
-        const response = await apiClient.get(`/api/specialties?lang_code=${lang_code}&search=${search}${degreeQuery}`);
+        // Backend reads the `lang` query param (not `lang_code`).
+        const response = await apiClient.get(`/api/specialties?lang=${lang_code}&search=${search}${degreeQuery}`);
         if (response.data.statusCode === 200) {
             return response.data.specialties;
         } else if (response.data.statusCode === 204) {

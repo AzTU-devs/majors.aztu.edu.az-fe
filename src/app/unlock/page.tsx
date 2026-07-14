@@ -38,7 +38,7 @@ export default function UnlockPage() {
                 <div className="mb-6 text-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                        src="/assets/aztu_logo.png"
+                        src="/assets/aztu-logo-dark.png"
                         alt="AZTU"
                         className="mx-auto mb-4 h-16 w-auto object-contain"
                     />

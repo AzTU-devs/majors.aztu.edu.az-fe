@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   description:
     "Azərbaycan Texniki Universitetinin bakalavr və magistr ixtisasları, fakültələr, kafedralar, sillabuslar və təlim nəticələri — hamısı bir yerdə.",
   keywords: ["AZTU", "Azerbaijan Technical University", "ixtisaslar", "təhsil proqramları", "bakalavr", "magistr", "fakültələr"],
-  icons: { icon: "/favicon.ico" },
+  // Favicon comes from src/app/icon.png (the new AZTU dark logo).
 };
 
 export default function RootLayout({

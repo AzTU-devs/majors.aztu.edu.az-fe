@@ -7,7 +7,8 @@ import { t } from "@/lib/i18n";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useParams, usePathname } from "next/navigation";
-import Aztu from "@/../public/assets/aztu_logo.png";
+import AztuDark from "@/../public/assets/aztu-logo-dark.png";
+import AztuLight from "@/../public/assets/aztu-logo-light.png";
 import LanguageToggler from "../languageToggler/LanguageToggler";
 import ThemeToggler from "../themeToggler/ThemeToggler";
 import { AnimatePresence, motion } from "framer-motion";
@@ -53,7 +54,7 @@ const Header = () => {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href={`/${lang}`} className="flex items-center gap-2 transition-opacity hover:opacity-80">
-          <Image src={Aztu} alt="Azərbaycan Texniki Universiteti" width={72} height={72} className="h-11 w-auto object-contain" priority />
+          <Image src={isDark ? AztuLight : AztuDark} alt="Azərbaycan Texniki Universiteti" width={72} height={72} className="h-11 w-auto object-contain" priority />
         </Link>
 
         {/* Desktop nav */}
