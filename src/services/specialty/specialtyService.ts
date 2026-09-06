@@ -1,7 +1,7 @@
 import apiClient from "../../util/apiClient";
 
 export interface Specialty {
-    cafedra_name: string;
+    cafedra_name?: string;
     specialty_name: string;
     specialty_code: string;
     degree?: number;
@@ -13,27 +13,10 @@ export interface SpecialtyPayload {
     specialty_code: string;
 }
 
-export const getSpecialtiesByCafedra = async (cafedraCode: string, token: string, start: number, end: number, lang_code: string) => {
-    try {
-        const response = await apiClient.get(`/api/specialties/${cafedraCode}?lang=${lang_code}&start=${start}&end=${end}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-
-        if (response.data.statusCode === 200) {
-            return {
-                "specialties": response.data.specialties,
-                "total_specialties": response.data.total
-            };
-        } else if (response.data.statusCode === 404) {
-            return "NOT FOUND";
-        } else {
-            return "ERROR";
-        }
-    } catch (err) {
-        return "ERROR";
-    }
+export interface SpecialtyDetails {
+    specialty_name: string;
+    /** 1 = bachelor, 2 = master. */
+    degree: 1 | 2;
 }
 
 export const getSpecialtiesByCafedraPublic = async (
@@ -41,54 +24,73 @@ export const getSpecialtiesByCafedraPublic = async (
     lang_code: string,
     start: number = 0,
     end: number = 100,
-) => {
+): Promise<Specialty[]> => {
     try {
         const response = await apiClient.get(
-            `/api/specialties/${cafedraCode}?lang=${lang_code}&start=${start}&end=${end}`
+            `/api/specialties/${encodeURIComponent(cafedraCode)}?lang=${lang_code}&start=${start}&end=${end}`
         );
-
-        if (response.data.statusCode === 200) {
+        if (response.data.statusCode === 200 && Array.isArray(response.data.specialties)) {
             return response.data.specialties as Specialty[];
         }
-        return [] as Specialty[];
-    } catch (err) {
-        return [] as Specialty[];
+        return [];
+    } catch {
+        return [];
     }
 };
 
-export const getAllSpecialties = async (lang_code: string, search: string, degree?: number) => {
+/**
+ * Catalogue listing.
+ *
+ * `facultyCode` is forwarded to the API so the faculty filter narrows the
+ * result set server-side instead of being a decorative chip row.
+ */
+export const getAllSpecialties = async (
+    lang_code: string,
+    search: string,
+    degree?: number,
+    facultyCode?: string,
+): Promise<Specialty[]> => {
     try {
-        const degreeQuery = degree ? `&degree=${degree}` : "";
-        // Backend reads the `lang` query param (not `lang_code`).
-        const response = await apiClient.get(`/api/specialties?lang=${lang_code}&search=${search}${degreeQuery}`);
-        if (response.data.statusCode === 200) {
-            return response.data.specialties;
-        } else if (response.data.statusCode === 204) {
-            return "NO CONTENT";
-        } else {
-            return "ERROR";
+        const params = new URLSearchParams({ lang: lang_code });
+        if (search) params.set("search", search);
+        if (degree) params.set("degree", String(degree));
+        if (facultyCode) params.set("faculty_code", facultyCode);
+
+        const response = await apiClient.get(`/api/specialties?${params.toString()}`);
+        if (response.data.statusCode === 200 && Array.isArray(response.data.specialties)) {
+            return response.data.specialties as Specialty[];
         }
-    } catch (err) {
-        return "ERROR";
+        // 204 => no specialties matched; an empty list is the correct answer.
+        return [];
+    } catch {
+        return [];
     }
 };
 
-export const getSpecialtyDetails = async (specialtyode: string | undefined, lang_code: string) => {
+/**
+ * A single programme's name and degree level.
+ *
+ * Returns null when the code is unknown. The previous version returned the
+ * sentinel strings "ERROR" / "NOT FOUND", which callers then rendered as the
+ * page's <h1>.
+ */
+export const getSpecialtyDetails = async (
+    specialtyCode: string | undefined,
+    lang_code: string,
+): Promise<SpecialtyDetails | null> => {
+    if (!specialtyCode) return null;
     try {
-        const response = await apiClient.get(`/api/specialty/${specialtyode}?lang=${lang_code}`);
-
-        if (response.data.statusCode === 200) {
-            return response.data.specialty_name;
-        } else {
-            return "ERROR";
+        const response = await apiClient.get(
+            `/api/specialty/${encodeURIComponent(specialtyCode)}?lang=${lang_code}`
+        );
+        if (response.data.statusCode === 200 && response.data.specialty_name) {
+            return {
+                specialty_name: response.data.specialty_name,
+                degree: response.data.degree === 2 ? 2 : 1,
+            };
         }
-    } catch (e: any) {
-        if (e.response) {
-            if (e.response.status === 404) {
-                return "NOT FOUND";
-            } else if (e.response.status === 409) {
-                return "CONFLICT";
-            }
-        }
+        return null;
+    } catch {
+        return null;
     }
-}
+};

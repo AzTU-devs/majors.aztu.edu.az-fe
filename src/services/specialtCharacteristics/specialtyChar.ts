@@ -1,32 +1,26 @@
 import apiClient from "../../util/apiClient";
 
-export interface SpecialtyCharPayload {
-    specialty_code: string;
-    program_desc: string;
-    degree_requirements: string;
-}
-
 export interface SpecialtyChar {
-    id: number;
+    id?: number;
     specialty_code: string;
     program_desc: string;
     degree_requirements: string;
 }
 
-export const getSpecialtyChar = async (specialtyCode: string, lang_code: string) => {
+/** Returns null when the programme has no characteristics recorded. */
+export const getSpecialtyChar = async (
+    specialtyCode: string,
+    lang_code: string,
+): Promise<SpecialtyChar | null> => {
     try {
         const response = await apiClient.get(
-            `/api/specialty-characteristics/${specialtyCode}?lang=${lang_code}`);
-
-        if (response.data.statusCode === 200) {
-            return response.data.characteristics[0];
-        } else if (response.data.statusCode === 204) {
-            return "NO CONTENT";
+            `/api/specialty-characteristics/${encodeURIComponent(specialtyCode)}?lang=${lang_code}`
+        );
+        if (response.data.statusCode === 200 && Array.isArray(response.data.characteristics)) {
+            return (response.data.characteristics[0] as SpecialtyChar) ?? null;
         }
-    } catch (error: any) {
-        if (error.response?.status === 404) {
-            return "NOT FOUND";
-        }
-        return "ERROR";
+        return null;
+    } catch {
+        return null;
     }
 };

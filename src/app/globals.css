@@ -1,216 +1,288 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
+
+/*
+  AzTU Majors — design tokens.
+
+  Brand colours are sampled from the official AzTU mark:
+    navy  #141E53  (emblem + "AZ" wordmark)
+    sky   #5198D5  ("TU" wordmark)
+*/
 
 @custom-variant dark (&:where([data-theme="dark"] *), [data-theme="dark"]&);
 
+@theme {
+  /* ── Brand ─────────────────────────────────────────────── */
+  --color-navy-50: #eef1f8;
+  --color-navy-100: #d8deef;
+  --color-navy-200: #b3bedd;
+  --color-navy-300: #8494c5;
+  --color-navy-400: #5568a5;
+  --color-navy-500: #2f4184;
+  --color-navy-600: #1f2f6a;
+  --color-navy-700: #141e53;
+  --color-navy-800: #0f1740;
+  --color-navy-900: #0a0f2b;
+  --color-navy-950: #060a1c;
+
+  --color-sky-brand-50: #eff6fc;
+  --color-sky-brand-100: #dbebf8;
+  --color-sky-brand-200: #bcdaf1;
+  --color-sky-brand-300: #8ec2e6;
+  --color-sky-brand-400: #5198d5;
+  --color-sky-brand-500: #3a82c4;
+  --color-sky-brand-600: #2b68a5;
+  --color-sky-brand-700: #245486;
+  --color-sky-brand-800: #22476f;
+  --color-sky-brand-900: #213d5e;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-plex), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1rem;
+
+  --shadow-card: 0 1px 2px rgba(10, 15, 43, 0.04), 0 8px 24px -12px rgba(10, 15, 43, 0.12);
+  --shadow-card-hover: 0 2px 4px rgba(10, 15, 43, 0.05), 0 20px 40px -20px rgba(10, 15, 43, 0.25);
+  --shadow-header: 0 1px 0 rgba(10, 15, 43, 0.06), 0 8px 24px -16px rgba(10, 15, 43, 0.2);
+}
+
+/* ── Semantic surface tokens (light) ───────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
 
-  /* Brand colors */
-  --primary: #182f79;
-  --primary-dark: #0E205B;
-  --primary-mid: #1e40af;
-  --primary-light: #dbeafe;
-  --accent: #2563eb;
+  --surface-page: #f6f7fb;
+  --surface-card: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #eef1f7;
+  --surface-inverse: #141e53;
 
-  /* Page / surface */
-  --bg-page: #f1f5f9;
-  --surface: #ffffff;
-  --border: #e2e8f0;
+  --border-subtle: #e4e8f0;
+  --border-strong: #cdd4e3;
 
-  /* Text */
-  --text-main: #1e293b;
-  --text-muted: #64748b;
+  --text-strong: #0a0f2b;
+  --text-body: #3d4663;
+  --text-muted: #6b7593;
+  --text-on-brand: #ffffff;
 
-  /* Radii */
-  --radius-card: 16px;
+  --brand: #141e53;
+  --brand-hover: #1f2f6a;
+  --brand-accent: #3a82c4;
+  --brand-tint: rgba(20, 30, 83, 0.06);
+
+  --ring: rgba(81, 152, 213, 0.45);
 }
 
 [data-theme="dark"] {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
+  color-scheme: dark;
 
-  /* Brand colors */
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
-  --primary-mid: #60a5fa;
-  --primary-light: #1e3a5f;
-  --accent: #60a5fa;
+  --surface-page: #070b1a;
+  --surface-card: #0f1530;
+  --surface-raised: #151c3d;
+  --surface-sunken: #0b1026;
+  --surface-inverse: #0a0f2b;
 
-  /* Page / surface */
-  --bg-page: #0f172a;
-  --surface: #1e293b;
-  --border: #334155;
+  --border-subtle: #1e2749;
+  --border-strong: #2c3763;
 
-  /* Text */
-  --text-main: #f1f5f9;
-  --text-muted: #94a3b8;
+  --text-strong: #f2f5fc;
+  --text-body: #b9c2de;
+  --text-muted: #8792b5;
+  --text-on-brand: #ffffff;
+
+  --brand: #5198d5;
+  --brand-hover: #8ec2e6;
+  --brand-accent: #8ec2e6;
+  --brand-tint: rgba(81, 152, 213, 0.12);
+
+  --ring: rgba(142, 194, 230, 0.5);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* ── Base ──────────────────────────────────────────────────── */
 * {
   -webkit-tap-highlight-color: transparent;
 }
 
-body {
-  background: var(--bg-page);
-  color: var(--text-main);
-  font-family: "Roboto", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+html {
+  scroll-behavior: smooth;
+  /* Offset anchor jumps so the sticky header never covers a heading. */
+  scroll-padding-top: 6rem;
 }
 
-/* Selection */
+/*
+  These defaults must live in @layer base. Tailwind emits utilities into
+  @layer utilities, and an *unlayered* rule beats any layered one regardless of
+  specificity — an unlayered `h1 { color: … }` silently overrode `text-white`
+  on the dark hero headings.
+*/
+@layer base {
+  body {
+    background: var(--surface-page);
+    color: var(--text-body);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    color: var(--text-strong);
+    font-family: var(--font-display);
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
 ::selection {
-  background: rgba(37, 99, 235, 0.22);
+  background: rgba(81, 152, 213, 0.28);
   color: inherit;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+/* Visible, brand-coloured focus ring for keyboard users only. */
+:focus-visible {
+  outline: 2px solid var(--brand-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-/* Custom scrollbar */
+/* ── Scrollbars ────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--border-strong);
+  border: 3px solid transparent;
+  background-clip: content-box;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-[data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: var(--text-muted);
+  background-clip: content-box;
 }
 
-/* Hide scrollbar utility (for tab strips) */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* ─── Animated background blobs ─── */
-@keyframes blobFloat {
-  0%, 100%   { transform: translate(0, 0) scale(1); }
-  33%        { transform: translate(30px, -40px) scale(1.08); }
-  66%        { transform: translate(-25px, 25px) scale(0.95); }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-.blob {
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Utilities ─────────────────────────────────────────────── */
+
+/* Skip link — visible only when focused. */
+.skip-link {
   position: absolute;
-  border-radius: 9999px;
-  filter: blur(70px);
-  opacity: 0.55;
-  pointer-events: none;
-  animation: blobFloat 18s ease-in-out infinite;
-  will-change: transform;
+  left: 1rem;
+  top: -100px;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  transition: top 0.2s ease;
 }
-.blob.blob-2 { animation-duration: 22s; animation-delay: -6s; }
-.blob.blob-3 { animation-duration: 26s; animation-delay: -12s; }
-
-/* ─── Slow shimmer for gradient text ─── */
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50%      { background-position: 100% 50%; }
-}
-.gradient-text {
-  background: linear-gradient(90deg, #ffffff 0%, #c7d2fe 35%, #93c5fd 60%, #ffffff 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradientShift 7s ease-in-out infinite;
+.skip-link:focus {
+  top: 1rem;
 }
 
-/* Brand gradient text (on light surfaces) */
-.gradient-brand {
-  background: linear-gradient(120deg, #182f79 0%, #2563eb 50%, #3b4fc2 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-[data-theme="dark"] .gradient-brand {
-  background: linear-gradient(120deg, #93c5fd 0%, #60a5fa 50%, #c7d2fe 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* ─── Subtle floating motion for hero artwork ─── */
-@keyframes floatY {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-12px); }
-}
-.float-slow { animation: floatY 6s ease-in-out infinite; }
-
-/* ─── Soft glow ring on CTA hover ─── */
-.cta-glow {
-  position: relative;
-  isolation: isolate;
-}
-.cta-glow::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, #60a5fa, #a78bfa, #60a5fa);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: -1;
-  filter: blur(8px);
-}
-.cta-glow:hover::before { opacity: 0.7; }
-
-/* ─── Scroll cue ─── */
-@keyframes scrollNudge {
-  0%, 100% { transform: translateY(0);   opacity: 0.6; }
-  50%      { transform: translateY(8px); opacity: 1;   }
-}
-.scroll-cue { animation: scrollNudge 2.2s ease-in-out infinite; }
-
-/* ─── Reusable surface / card primitives ─── */
-.surface-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  box-shadow: 0 8px 30px -16px rgba(15, 23, 42, 0.15);
-}
-
-/* Dotted hero overlay */
+/* Dotted texture used on dark brand panels. */
 .dot-grid {
   background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-size: 22px 22px;
 }
 
-/* ─── Shared entrance animation (no-JS fallback friendly) ─── */
+/* Faint blueprint grid — evokes a technical university without noise. */
+.blueprint-grid {
+  background-image:
+    linear-gradient(to right, currentColor 1px, transparent 1px),
+    linear-gradient(to bottom, currentColor 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* Brand gradient text. */
+.text-gradient-brand {
+  background: linear-gradient(115deg, #141e53 0%, #2f4184 45%, #3a82c4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+[data-theme="dark"] .text-gradient-brand {
+  background: linear-gradient(115deg, #bcdaf1 0%, #8ec2e6 50%, #ffffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Entrance animation that degrades gracefully without JS. */
 @keyframes fadeRise {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .animate-rise {
-  animation: fadeRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fadeRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Reduced motion */
+/* Shimmer used by skeleton placeholders. */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-sunken);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  animation: shimmer 1.6s infinite;
+}
+[data-theme="dark"] .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+}
+
+/* Tables that must scroll rather than push the page sideways. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Print: drop chrome so a syllabus prints as a clean document. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
   }
 }

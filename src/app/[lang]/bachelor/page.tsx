@@ -1,59 +1,68 @@
-"use client";
+import type { Metadata } from "next";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import Footer from "@/components/footer/Footer";
-import Header from "@/components/header/Header";
-import Specialties from "@/components/specialties/Specialties";
-import PageTitle from "@/components/pageTitle/PageTitle";
-import Search from "@/components/search/Search";
-import FacultyCategory from "@/components/facultyCategory/FacultyCategoty";
+import PageHero from "@/components/ui/PageHero";
+import ProgrammeCatalogue from "@/components/catalogue/ProgrammeCatalogue";
+import JsonLd from "@/components/seo/JsonLd";
+import { breadcrumbSchema, graph } from "@/lib/jsonld";
+import { fetchSpecialties } from "@/lib/api";
+import { SITE_NAME, localeAlternates, resolveLocale } from "@/lib/site";
 
-export type Locale = "az" | "en";
+const PATH = "/bachelor";
 
-export default function page() {
-  const params = useParams();
-  const urlLang = Array.isArray(params?.lang) ? params.lang[0] : params?.lang;
-  const reduxLocale = useSelector((state: RootState) => state.locale.value);
-  // URL is the source of truth for language; fall back to the Redux value.
-  const locale: Locale = urlLang === "en" ? "en" : urlLang === "az" ? "az" : reduxLocale;
-  const [search, setSearch] = useState("");
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const locale = resolveLocale((await params).lang);
+  const az = locale === "az";
+  const title = az ? "Bakalavr ixtisasları" : "Bachelor's programmes";
+  const description = az ? "AzTU-nun bütün bakalavr ixtisasları: tədris planı, fənlər, təlim nəticələri və karyera imkanları." : "All bachelor's degree programmes at AzTU: curriculum, subjects, learning outcomes and career paths.";
 
-  const handleSearch = (value: string) => {
-    setSearch(value);
+  return {
+    title,
+    description,
+    alternates: localeAlternates(PATH, locale),
+    openGraph: { title, description, type: "website" },
   };
+}
+
+export default async function Page({ params }: { params: Promise<{ lang: string }> }) {
+  const locale = resolveLocale((await params).lang);
+  const az = locale === "az";
+  const items = await fetchSpecialties(locale, 1);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow bg-[#f1f5f9] dark:bg-slate-900">
-        <PageTitle
-          category={locale === "az" ? "Bakalavr" : "Bachelor"}
-          title={locale === "az" ? "Bakalavr ixtisasları (Təhsil proqramları)" : "Bachelor Specialties"}
-          subtitle={locale === "az" ? "Azərbaycan Texniki Universitetinin bakalavr proqramları" : "Undergraduate programs at Azerbaijan Technical University"}
-        />
-        <section className="max-w-7xl mx-auto w-full flex flex-col gap-5 px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-          {/* Search & Filter Panel */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-[#e2e8f0] dark:border-slate-700 p-5">
-            <label className="block text-[11px] uppercase tracking-[0.12em] text-[#64748b] dark:text-slate-400 font-semibold mb-2">
-              {locale === "az" ? "İxtisas axtar" : "Search specialties"}
-            </label>
-            <Search onSearch={handleSearch} />
-            <div className="mt-4 pt-4 border-t border-[#f1f5f9] dark:border-slate-700">
-              <label className="block text-[11px] uppercase tracking-[0.12em] text-[#64748b] dark:text-slate-400 font-semibold mb-3">
-                {locale === "az" ? "Fakültəyə görə filtr" : "Filter by faculty"}
-              </label>
-              <FacultyCategory />
-            </div>
-          </div>
-
-          {/* Results */}
-          <Specialties search={search} degree={1} />
-        </section>
-      </main>
-      <Footer />
-    </div>
+    <>
+      <JsonLd
+        data={graph(
+          breadcrumbSchema([
+            { name: SITE_NAME[locale], path: `/${locale}` },
+            { name: az ? "Bakalavr ixtisasları" : "Bachelor's programmes", path: `/${locale}${PATH}` },
+          ]),
+          {
+            "@type": "ItemList",
+            name: az ? "Bakalavr ixtisasları" : "Bachelor's programmes",
+            numberOfItems: items.length,
+            itemListElement: items.slice(0, 100).map((s, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              name: s.specialty_name,
+              url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://majors.aztu.edu.az"}/${locale}/programmes/${encodeURIComponent(s.specialty_code)}`,
+            })),
+          }
+        )}
+      />
+      <PageHero
+        eyebrow={az ? "Bakalavr" : "Bachelor"}
+        title={az ? "Bakalavr ixtisasları" : "Bachelor's programmes"}
+        subtitle={az ? "Azərbaycan Texniki Universitetinin bütün bakalavr təhsil proqramları — fakültə və axtarış üzrə filtrlə." : "Every undergraduate programme at Azerbaijan Technical University — filter by faculty or search by name."}
+        breadcrumbs={[
+          { label: az ? "Ana səhifə" : "Home", href: `/${locale}` },
+          { label: az ? "Bakalavr" : "Bachelor" },
+        ]}
+      />
+      <ProgrammeCatalogue locale={locale} degree={1} />
+    </>
   );
 }

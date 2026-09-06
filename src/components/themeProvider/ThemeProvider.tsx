@@ -1,26 +1,40 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "@/redux/store";
-import { setTheme, Theme } from "@/redux/slices/themeSlice";
+import type { AppDispatch, RootState } from "@/redux/store";
+import { setTheme, type Theme } from "@/redux/slices/themeSlice";
 
+/**
+ * Keeps the Redux theme, <html data-theme> and localStorage in step.
+ *
+ * The attribute itself is set before first paint by the inline script in the
+ * root layout; this component adopts whatever that script decided so the store
+ * agrees with what the user is already looking at.
+ */
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch<AppDispatch>();
-  const theme = useSelector((state: RootState) => state.theme.value);
+  const theme = useSelector((s: RootState) => s.theme.value);
+  const hydrated = useRef(false);
 
-  // On mount, restore theme from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("theme") as Theme | null;
-    if (saved === "dark" || saved === "light") {
-      dispatch(setTheme(saved));
+    const applied = document.documentElement.getAttribute("data-theme");
+    if (applied === "dark" || applied === "light") {
+      dispatch(setTheme(applied as Theme));
     }
+    hydrated.current = true;
   }, [dispatch]);
 
-  // Apply data-theme attribute to <html> whenever theme changes
   useEffect(() => {
+    // Skip the first pass so the store's default ("light") cannot overwrite the
+    // dark theme the inline script has already applied.
+    if (!hydrated.current) return;
     document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      // Private mode / storage disabled — the theme just won't persist.
+    }
   }, [theme]);
 
   return <>{children}</>;

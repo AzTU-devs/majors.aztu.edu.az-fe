@@ -1,48 +1,43 @@
 "use client";
 
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "@/redux/store";
-import { setTheme } from "@/redux/slices/themeSlice";
+import { useEffect, useState } from "react";
+import { useTheme } from "@/hooks/useTheme";
+import { useLocale } from "@/hooks/useLocale";
+import { tr } from "@/lib/i18n";
 
-/**
- * @param onDark  true when the toggler sits on a dark/hero surface (white controls),
- *                false when it sits on a light surface (dark controls).
- */
-export default function ThemeToggler({ onDark = false }: { onDark?: boolean }) {
-  const dispatch = useDispatch<AppDispatch>();
-  const theme = useSelector((state: RootState) => state.theme.value);
-  const isDark = theme === "dark";
+export default function ThemeToggler() {
+  const { isDark, toggle } = useTheme();
+  const { locale } = useLocale();
 
-  const toggle = () => dispatch(setTheme(isDark ? "light" : "dark"));
-
-  const buttonClass = onDark
-    ? "bg-white/15 border-white/25 hover:bg-white/25 text-white"
-    : "bg-[#182f79]/8 border-[#182f79]/15 hover:bg-[#182f79]/15 text-[#182f79]";
+  // The server cannot know the visitor's stored theme, so the icon is only
+  // rendered after mount. Without this the markup mismatches on hydration.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <button
+      type="button"
       onClick={toggle}
-      aria-label="Toggle theme"
-      className={`flex items-center justify-center w-9 h-9 rounded-full border backdrop-blur-sm transition-all duration-200 active:scale-90 ${buttonClass}`}
+      aria-label={
+        isDark
+          ? tr(locale, "İşıqlı rejimə keç", "Switch to light mode")
+          : tr(locale, "Qaranlıq rejimə keç", "Switch to dark mode")
+      }
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-strong)] text-[var(--text-body)] transition-all duration-200 hover:border-[var(--brand-accent)] hover:text-[var(--brand-accent)] active:scale-90"
     >
-      {isDark ? (
-        <svg className="w-[18px] h-[18px] text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {!mounted ? (
+        <span aria-hidden className="h-[18px] w-[18px]" />
+      ) : isDark ? (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-[18px] w-[18px] text-amber-300">
+          <circle cx="12" cy="12" r="4" />
           <path
+            d="M12 3v1.5M12 19.5V21M21 12h-1.5M4.5 12H3m14.36-6.36l-1.06 1.06M7.7 16.3l-1.06 1.06m10.72 0l-1.06-1.06M7.7 7.7L6.64 6.64"
             strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"
           />
         </svg>
       ) : (
-        <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
-          />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-[18px] w-[18px]">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )}
     </button>

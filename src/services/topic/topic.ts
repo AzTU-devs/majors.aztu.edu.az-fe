@@ -7,39 +7,26 @@ export interface Topic {
     topic_desc: string;
     topic_result: string;
     topic_type: number;
-    created_at: string;
+    created_at?: string;
 }
 
-export const getTopics = async (subjectCode: string, start: number, end: number, lang_code: string) => {
+/** Topics of a subject. Always resolves to an array. */
+export const getTopics = async (
+    subjectCode: string,
+    start: number,
+    end: number,
+    lang_code: string,
+): Promise<Topic[]> => {
+    if (!subjectCode) return [];
     try {
-        const response = await apiClient.get(`/api/topic/${subjectCode}?start=${start}&end=${end}&lang=${lang_code}`);
-
-        if (response.data.statusCode === 200) {
-            return {
-                topics: response.data.topics,
-                total: response.data.total
-            };
+        const response = await apiClient.get(
+            `/api/topic/${encodeURIComponent(subjectCode)}?start=${start}&end=${end}&lang=${lang_code}`
+        );
+        if (response.data.statusCode === 200 && Array.isArray(response.data.topics)) {
+            return response.data.topics as Topic[];
         }
-
-        if (response.status === 204) {
-            return {
-                topics: [],
-                total: 0
-            };
-        }
-
-    } catch (error: any) {
-        if (error.response) {
-            if (error.response.status === 404) {
-                return "NOT_FOUND";
-            }
-            if (error.response.status === 204) {
-                return {
-                    topics: [],
-                    total: 0
-                };
-            }
-        }
-        return "ERROR";
+        return [];
+    } catch {
+        return [];
     }
 };

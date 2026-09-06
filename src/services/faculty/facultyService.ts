@@ -1,17 +1,26 @@
 import apiClient from "../../util/apiClient";
 
 export interface Faculty {
-    id: number;
-    faculty_name: string;
     faculty_code: string;
-    cafedra_count: number;
-    created_at: string;
+    faculty_name: string;
 }
 
-export const getFaculties = async (lang_code: string) => {
-    const response = await apiClient.get(`/api/faculties?lang=${lang_code}`);
-    console.log(response);
-    if (response.data.status === 200) {
-        return response.data.faculties;
+/**
+ * All faculties for a language.
+ *
+ * Always resolves to an array — the previous version returned `undefined` for
+ * any non-200 body and had no catch, so a failed request rejected inside the
+ * caller's `.then()` chain.
+ */
+export const getFaculties = async (lang_code: string): Promise<Faculty[]> => {
+    try {
+        const response = await apiClient.get(`/api/faculties?lang=${lang_code}`);
+        // The faculties endpoint reports its status as `status` (not `statusCode`).
+        if (response.data?.status === 200 && Array.isArray(response.data.faculties)) {
+            return response.data.faculties as Faculty[];
+        }
+        return [];
+    } catch {
+        return [];
     }
-}
+};

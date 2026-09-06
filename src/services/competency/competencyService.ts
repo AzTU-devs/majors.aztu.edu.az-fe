@@ -1,8 +1,6 @@
 import apiClient from "../../util/apiClient";
 
-const lang_code = "az";
-
-// competency_type: 1 = Peşə (Job), 2 = İxtisas (Specialty)
+/** competency_type: 1 = Peşə (job), 2 = İxtisas (specialty/general). */
 export interface Competency {
     id: number;
     specialty_code: string;
@@ -12,28 +10,19 @@ export interface Competency {
     competency_content: string;
 }
 
-export interface CompetencyPayload {
-    specialty_code: string;
-    competency_content: string;
-}
-
-export const getCompetencyBySpecialty = async (specialty_code: string, lang_code: string) => {
+export const getCompetencyBySpecialty = async (
+    specialtyCode: string,
+    lang_code: string,
+): Promise<Competency[]> => {
     try {
-        const response = await apiClient.get(`/api/competency/${specialty_code}?lang=${lang_code}`);
-
-        if (response.data.statusCode === 200) {
-            return response.data.competencies;
-        } else if (response.data.statusCode === 204) {
-            return "NO CONTENT";
+        const response = await apiClient.get(
+            `/api/competency/${encodeURIComponent(specialtyCode)}?lang=${lang_code}`
+        );
+        if (response.data.statusCode === 200 && Array.isArray(response.data.competencies)) {
+            return response.data.competencies as Competency[];
         }
-    } catch (error: any) {
-        if (error.response) {
-            if (error.response.status === 404) {
-                return "NOT FOUND";
-            } else if (error.response.status === 409) {
-                return "CONFLICT";
-            }
-        }
-        throw error;
+        return [];
+    } catch {
+        return [];
     }
-}
+};

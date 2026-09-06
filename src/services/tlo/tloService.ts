@@ -8,15 +8,21 @@ export interface Tlo {
     tlo_content: string;
 }
 
-export const getTloByTopicCode = async (topicCode: string, locale: string): Promise<Tlo[]> => {
+/** Topic learning outcomes. Always resolves to an array. */
+export const getTloByTopicCode = async (
+    topicCode: string,
+    locale: string,
+): Promise<Tlo[]> => {
+    if (!topicCode) return [];
     try {
-        const response = await apiClient.get(`/api/tlo/topic/${topicCode}?lang=${locale}`);
-
+        const response = await apiClient.get(
+            `/api/tlo/topic/${encodeURIComponent(topicCode)}?lang=${locale}`
+        );
         if (response.data.statusCode === 200 && Array.isArray(response.data.tlos)) {
-            return response.data.tlos;
+            return response.data.tlos as Tlo[];
         }
         return [];
-    } catch (err) {
+    } catch {
         return [];
     }
 };

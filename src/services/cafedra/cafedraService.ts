@@ -1,5 +1,4 @@
 import apiClient from "../../util/apiClient";
-const lang_code = "az";
 
 export interface Cafedra {
     faculty_code: string;
@@ -7,39 +6,24 @@ export interface Cafedra {
     cafedra_name: string;
 }
 
-// get all cafedras for language az
-
-export const getCafedras = async () => {
-    try {
-        const response = await apiClient.get(`/api/cafedras?lang_code=${lang_code}`);
-
-        const statusCode = response.data.statusCode;
-
-        if (statusCode === 200) {
-            return response.data.cafedras;
-        } else if (response.status === 204) {
-            return "NO CONTENT";
-        } else {
-            return "ERROR";
-        }
-    } catch (e) {
-        return "ERROR";
-    }
-}
-
+/** Departments belonging to a faculty. Always resolves to an array. */
 export const getCafedrasByFaculty = async (
-    faculty_code: string,
-    lang: string = lang_code,
-) => {
+    facultyCode: string,
+    lang: string = "az",
+): Promise<Cafedra[]> => {
+    if (!facultyCode) return [];
     try {
-        const response = await apiClient.get(`/api/cafedras/${faculty_code}?lang=${lang}`);
-
-        if (response.data.status_code === 200) {
-            return response.data.cafedras;
-        } else {
-            return "NOT FOUND";
+        const response = await apiClient.get(
+            `/api/cafedras/${encodeURIComponent(facultyCode)}?lang=${lang}`
+        );
+        // This endpoint reports its status as `status_code`.
+        const body = response.data;
+        const ok = body?.status_code === 200 || body?.statusCode === 200;
+        if (ok && Array.isArray(body.cafedras)) {
+            return body.cafedras as Cafedra[];
         }
-    } catch (e) {
-        return "ERROR";
+        return [];
+    } catch {
+        return [];
     }
 };

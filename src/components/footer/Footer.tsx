@@ -1,144 +1,197 @@
 "use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useParams } from 'next/navigation';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
-import EmailIcon from '@mui/icons-material/Email';
-import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
-import AztuLogoLight from "@/../public/assets/aztu-logo-light.png";
+import Link from "next/link";
+import Image from "next/image";
+import { t, tr } from "@/lib/i18n";
+import { useLocale } from "@/hooks/useLocale";
+import { SITE_TAGLINE, UNIVERSITY } from "@/lib/site";
+import { Container } from "../ui/primitives";
 
-export type Locale = "az" | "en";
+import AztuLogoLight from "@/../public/assets/aztu-logo-light-320.png";
+
+/** "+994125383383" -> "(+994 12) 538-33-83" */
+function formatPhone(raw: string) {
+  const digits = raw.replace(/\D/g, "");
+  const national = digits.startsWith("994") ? digits.slice(3) : digits;
+  const m = national.match(/^(\d{2})(\d{3})(\d{2})(\d{2})$/);
+  return m ? `(+994 ${m[1]}) ${m[2]}-${m[3]}-${m[4]}` : raw;
+}
+
+const MailIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-3.5 w-3.5">
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M3.5 6.5l8.5 6 8.5-6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const PhoneIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-3.5 w-3.5">
+    <path
+      d="M5 3h3.5l1.5 4.5-2 1.4a12.5 12.5 0 006.1 6.1l1.4-2L20 14.5V18a2 2 0 01-2.2 2A16.5 16.5 0 013 6.2 2 2 0 015 3z"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const PinIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="h-3.5 w-3.5">
+    <path d="M12 21s7-5.5 7-11a7 7 0 10-14 0c0 5.5 7 11 7 11z" strokeLinejoin="round" />
+    <circle cx="12" cy="10" r="2.5" />
+  </svg>
+);
 
 export default function Footer() {
-    const { lang } = useParams();
-    const locale: Locale = useSelector((state: RootState) => state.locale.value);
-    const tr = (az: string, en: string) => (locale === "az" ? az : en);
+  const { locale, lang } = useLocale();
+  const az = locale === "az";
 
-    return (
-        <footer className="relative overflow-hidden" style={{ background: "linear-gradient(180deg, #182f79 0%, #112368 100%)" }}>
-            {/* Dot-grid texture */}
-            <div
-                className="absolute inset-0 opacity-[0.05] text-white pointer-events-none dot-grid"
-                aria-hidden
-            />
-            {/* Top accent line */}
-            <div
-                className="relative h-px w-full"
-                style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.18), transparent)" }}
-            />
+  const columns = [
+    {
+      title: tr(locale, "Təhsil proqramları", "Programmes"),
+      links: [
+        { href: `/${lang}/bachelor`, label: t("header", "bachelor", locale) },
+        { href: `/${lang}/master`, label: t("header", "master", locale) },
+        { href: `/${lang}/faculties`, label: t("header", "faculties", locale) },
+      ],
+    },
+    {
+      title: tr(locale, "Universitet", "University"),
+      links: [
+        { href: `/${lang}/contact`, label: tr(locale, "Əlaqə", "Contact") },
+        { href: UNIVERSITY.url, label: "aztu.edu.az", external: true },
+      ],
+    },
+  ];
 
-            <div className="relative px-6 md:px-16 py-14">
-                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
-                    {/* Brand */}
-                    <div className="md:col-span-1 flex flex-col gap-4">
-                        <Image
-                            src={AztuLogoLight}
-                            alt="Azərbaycan Texniki Universiteti"
-                            width={110}
-                            height={110}
-                            className="object-contain"
+  return (
+    <footer className="relative mt-auto overflow-hidden bg-navy-700 text-white no-print">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_110%_at_10%_-20%,#2f4184_0%,transparent_55%)]"
+      />
+      <div aria-hidden className="dot-grid pointer-events-none absolute inset-0 text-white opacity-[0.05]" />
+
+      <Container className="relative py-14 md:py-16">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-12">
+          {/* Brand */}
+          <div className="col-span-2 md:col-span-5">
+            <Link href={`/${lang}`} className="inline-flex items-center gap-3.5">
+              <Image
+                src={AztuLogoLight}
+                alt={az ? UNIVERSITY.nameAz : UNIVERSITY.nameEn}
+                width={160}
+                height={219}
+                className="h-14 w-auto object-contain"
+              />
+              <span className="border-l border-white/20 pl-3.5">
+                <span className="block text-[15px] font-extrabold leading-tight">{UNIVERSITY.shortName}</span>
+                <span className="block text-[11.5px] leading-tight text-white/55">{SITE_TAGLINE[locale]}</span>
+              </span>
+            </Link>
+
+            <p className="mt-5 max-w-sm text-[13.5px] leading-relaxed text-white/55">
+              {tr(
+                locale,
+                "Azərbaycan Texniki Universiteti — 1920-ci ildən texniki elmlər sahəsində aparıcı ali təhsil müəssisəsi.",
+                "Azerbaijan Technical University — a leading institution of higher technical education since 1920."
+              )}
+            </p>
+          </div>
+
+          {/* Link columns */}
+          {columns.map((col) => (
+            <nav key={col.title} aria-label={col.title} className="md:col-span-2">
+              <h2 className="mb-4 text-[10.5px] font-bold uppercase tracking-[0.16em] text-white/40">
+                {col.title}
+              </h2>
+              <ul className="flex flex-col gap-2.5">
+                {col.links.map((link) => (
+                  <li key={link.href}>
+                    {"external" in link && link.external ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[13.5px] text-white/60 transition-colors hover:text-white"
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="group inline-flex items-center gap-1.5 text-[13.5px] text-white/60 transition-colors hover:text-white"
+                      >
+                        <span
+                          aria-hidden
+                          className="h-px w-0 overflow-hidden bg-sky-brand-400 transition-all duration-200 group-hover:w-3"
                         />
-                        <p className="text-white/50 text-[13px] leading-relaxed max-w-[220px]">
-                            {tr(
-                                "Azərbaycan Texniki Universiteti — texniki elmlər sahəsində aparıcı ali təhsil müəssisəsi.",
-                                "Azerbaijan Technical University — a leading institution of higher education in technical sciences."
-                            )}
-                        </p>
-                    </div>
+                        {link.label}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
 
-                    {/* Links */}
-                    <div>
-                        <h2 className="text-white/40 text-[10px] uppercase tracking-[0.14em] font-semibold mb-4">
-                            {tr("Keçidlər", "Links")}
-                        </h2>
-                        <ul className="flex flex-col gap-2.5">
-                            {[
-                                { href: `/${lang}/bachelor`, label: tr("Bakalavr", "Bachelor") },
-                                { href: `/${lang}/master`, label: tr("Magistr", "Master") },
-                                { href: `/${lang}/faculties`, label: tr("Fakültələr", "Faculties") },
-                                { href: `/${lang}/contact`, label: tr("Əlaqə", "Contact") },
-                            ].map((item) => (
-                                <li key={item.href}>
-                                    <Link
-                                        href={item.href}
-                                        className="text-white/60 hover:text-white transition-colors text-[14px] flex items-center gap-1.5 group"
-                                    >
-                                        <span className="w-0 group-hover:w-3 h-px bg-white/60 transition-all duration-200 overflow-hidden" />
-                                        {item.label}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+          {/* Contact */}
+          <div className="col-span-2 md:col-span-3">
+            <h2 className="mb-4 text-[10.5px] font-bold uppercase tracking-[0.16em] text-white/40">
+              {tr(locale, "Əlaqə", "Contact")}
+            </h2>
+            <ul className="flex flex-col gap-2.5 text-[13.5px]">
+              <li>
+                <a
+                  href={`mailto:${UNIVERSITY.email}`}
+                  className="flex items-center gap-2 text-white/60 transition-colors hover:text-white"
+                >
+                  <span className="opacity-60">{MailIcon}</span>
+                  {UNIVERSITY.email}
+                </a>
+              </li>
+              {UNIVERSITY.phones.map((num) => (
+                <li key={num}>
+                  <a
+                    href={`tel:${num}`}
+                    className="flex items-center gap-2 text-white/60 transition-colors hover:text-white"
+                  >
+                    <span className="opacity-60">{PhoneIcon}</span>
+                    {formatPhone(num)}
+                  </a>
+                </li>
+              ))}
+              <li className="flex items-start gap-2 text-white/60">
+                <span className="mt-0.5 opacity-60">{PinIcon}</span>
+                <address className="not-italic leading-relaxed">
+                  {az ? UNIVERSITY.address.streetAz : UNIVERSITY.address.streetEn},{" "}
+                  {az ? UNIVERSITY.address.cityAz : UNIVERSITY.address.cityEn}
+                </address>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </Container>
 
-                    {/* Contact */}
-                    <div>
-                        <h2 className="text-white/40 text-[10px] uppercase tracking-[0.14em] font-semibold mb-4">
-                            {tr("Əlaqə", "Contact")}
-                        </h2>
-                        <ul className="flex flex-col gap-2.5">
-                            <li>
-                                <a
-                                    href="https://aztu.edu.az"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-white/60 hover:text-white transition-colors text-[14px]"
-                                >
-                                    aztu.edu.az
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="mailto:aztu@aztu.edu.az"
-                                    className="text-white/60 hover:text-white transition-colors text-[14px] flex items-center gap-2"
-                                >
-                                    <EmailIcon style={{ fontSize: 14 }} className="opacity-60" />
-                                    aztu@aztu.edu.az
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {/* Phone */}
-                    <div>
-                        <h2 className="text-white/40 text-[10px] uppercase tracking-[0.14em] font-semibold mb-4">
-                            {tr("Telefon", "Phone")}
-                        </h2>
-                        <ul className="flex flex-col gap-2.5">
-                            {["+994125383383", "+994125391305"].map((num) => (
-                                <li key={num}>
-                                    <a
-                                        href={`tel:${num}`}
-                                        className="text-white/60 hover:text-white transition-colors text-[14px] flex items-center gap-2"
-                                    >
-                                        <LocalPhoneIcon style={{ fontSize: 14 }} className="opacity-60" />
-                                        {num.replace("+994", "(+994 ").replace(/(\d{2})(\d{3})(\d{2})(\d{2})$/, "$1) $2-$3-$4")}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            {/* Copyright */}
-            <div className="relative bg-[#0E205B] py-4 px-6">
-                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center gap-2 justify-between">
-                    <p className="text-white/40 text-[12px] text-center">
-                        © {new Date().getFullYear()} {tr("Azərbaycan Texniki Universiteti. Bütün hüquqlar qorunur.", "Azerbaijan Technical University. All rights reserved.")}
-                    </p>
-                    <div className="flex items-center gap-1.5">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400/50" />
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400/70" />
-                        </span>
-                        <span className="text-white/30 text-[11px]">aztu.edu.az</span>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    );
+      {/* Copyright bar */}
+      <div className="relative border-t border-white/10 bg-navy-800/60">
+        <Container className="flex flex-col items-center justify-between gap-2 py-5 sm:flex-row">
+          <p className="text-center text-[12px] text-white/40">
+            © {new Date().getFullYear()}{" "}
+            {tr(
+              locale,
+              "Azərbaycan Texniki Universiteti. Bütün hüquqlar qorunur.",
+              "Azerbaijan Technical University. All rights reserved."
+            )}
+          </p>
+          <a
+            href={UNIVERSITY.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[12px] text-white/40 transition-colors hover:text-white/70"
+          >
+            aztu.edu.az
+          </a>
+        </Container>
+      </div>
+    </footer>
+  );
 }

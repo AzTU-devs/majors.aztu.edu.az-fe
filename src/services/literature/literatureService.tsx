@@ -3,44 +3,25 @@ import apiClient from "../../util/apiClient";
 export interface Literature {
     id: number;
     literature_code: string;
-    specialty_code: string;
+    specialty_code?: string;
     literature_name: string;
     url: string;
-    created_at: string;
-    updated_at: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
-export interface LiteraturePayload {
-    subject_code: string;
-    url: string;
-    literature_name: string;
-}
-
-export const getLiteratures = async (subjectCode: string) => {
+/** Reading list for a subject. Always resolves to an array. */
+export const getLiteratures = async (subjectCode: string): Promise<Literature[]> => {
+    if (!subjectCode) return [];
     try {
-        const response = await apiClient.get(`/api/literature/subject/${subjectCode}`);
-
-        if (response.data.statusCode === 200) {
-            return {
-                "literatures": response.data.literatures,
-                "total": response.data.total
-            };
-        } else if (response.data.statusCode == 204) {
-            return "NO CONTENT";
+        const response = await apiClient.get(
+            `/api/literature/subject/${encodeURIComponent(subjectCode)}`
+        );
+        if (response.data.statusCode === 200 && Array.isArray(response.data.literatures)) {
+            return response.data.literatures as Literature[];
         }
-    } catch (err: any) {
-        return "ERROR";
+        return [];
+    } catch {
+        return [];
     }
-}
-
-export const addLiterature = async (literaturePayload: LiteraturePayload) => {
-    try {
-        const response = await apiClient.post("/api/literature/create", literaturePayload);
-
-        if (response.data.statusCode === 201) {
-            return "SUCCESS";
-        }
-    } catch (err: any) {
-        return "ERROR";
-    }
-}
+};

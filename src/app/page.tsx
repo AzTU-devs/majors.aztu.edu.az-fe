@@ -1,5 +1,6 @@
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
+import { DEFAULT_LOCALE } from "@/lib/site";
 
 export default function RootPage() {
-  redirect('/az');
+  redirect(`/${DEFAULT_LOCALE}`);
 }

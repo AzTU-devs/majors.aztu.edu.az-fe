@@ -7,19 +7,8 @@ export interface Subject {
     hours_per_week: number;
     status: number;
     year: string;
-    credit: number
-};
-
-export interface SubjectPayload {
-    specialty_code: string;
-    subject_code: string;
-    subject_name: string;
-    semester: number;
-    status: number;
-    credit?: number;
-    year: string;
-    hours_per_week?: number;
-};
+    credit: number;
+}
 
 export interface AssessmentRow {
     form: string;
@@ -43,40 +32,43 @@ export interface SubjectDetails {
     out_of_class_hours?: string;
     teaching_methods?: string | null;
     assessment?: AssessmentRow[];
+}
+
+/** All subjects of a programme. Always resolves to an array. */
+export const getCurriculaBySpecialtyCode = async (
+    specialtyCode: string,
+    start: number,
+    end: number,
+    lang_code: string,
+): Promise<Subject[]> => {
+    try {
+        const response = await apiClient.get(
+            `/api/curricula/${encodeURIComponent(specialtyCode)}/subjects?start=${start}&end=${end}&lang=${lang_code}`
+        );
+        if (response.data.statusCode === 200 && Array.isArray(response.data.subjects)) {
+            return response.data.subjects as Subject[];
+        }
+        return [];
+    } catch {
+        return [];
+    }
 };
 
-export const getCurriculaBySpecialtyCode = async (specialtyCode: string, start: number, end: number, lang_code: string) => {
+/** One subject's full record, or null when the code is unknown. */
+export const getSubjectDetails = async (
+    subjectCode: string,
+    lang_code: string,
+): Promise<SubjectDetails | null> => {
+    if (!subjectCode) return null;
     try {
-        const response = await apiClient.get(`/api/curricula/${encodeURIComponent(specialtyCode)}/subjects?start=${start}&end=${end}&lang=${lang_code}`);
-        if (response.data.statusCode === 200) {
-            return {
-                "subjects": response.data.subjects,
-                "total_subjects": response.data.total
-            }
-        } else {
-            return "ERROR";
+        const response = await apiClient.get(
+            `/api/curricula/${encodeURIComponent(subjectCode)}?lang=${lang_code}`
+        );
+        if (response.data.statusCode === 200 && response.data.subject_details) {
+            return response.data.subject_details as SubjectDetails;
         }
-    } catch (e: any) {
-        if (e.response && e.response.status === 404) {
-            return "NOT FOUND";
-        } else {
-            return "ERROR";
-        }
+        return null;
+    } catch {
+        return null;
     }
-}
-
-export const getSubjectDetails = async (subjectCode: string, lang_code: string) => {
-    try {
-        const response = await apiClient.get(`/api/curricula/${encodeURIComponent(subjectCode)}?lang=${lang_code}`);
-
-        if (response.data.statusCode === 200) {
-            return response.data.subject_details;
-        }
-    } catch (e: any) {
-        if (e.response && e.response.status === 404) {
-            return "NOT FOUND";
-        } else {
-            return "ERROR";
-        }
-    }
-}
+};
