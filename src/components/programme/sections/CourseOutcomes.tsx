@@ -6,8 +6,8 @@ import { useEffect, useState } from "react";
 import { tr } from "@/lib/i18n";
 import type { Locale } from "@/lib/site";
 import { subjectPath } from "@/lib/routes";
-import { getCloBySubjectCode, type Clo } from "@/services/clo/clo";
-import { getCurriculaBySpecialtyCode, type Subject } from "@/services/curricula/curricula";
+import { getCloBySubjectKey, type Clo } from "@/services/clo/clo";
+import { getCurriculaBySpecialtyKey, type Subject } from "@/services/curricula/curricula";
 import {
   ArrowRight,
   Card,
@@ -23,10 +23,10 @@ import {
  */
 export default function CourseOutcomes({
   locale,
-  specialtyCode,
+  specialtyKey,
 }: {
   locale: Locale;
-  specialtyCode: string;
+  specialtyKey: string;
 }) {
   const [rows, setRows] = useState<{ subject: Subject; clos: Clo[] }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,11 +36,11 @@ export default function CourseOutcomes({
     setLoading(true);
 
     (async () => {
-      const subjects = await getCurriculaBySpecialtyCode(specialtyCode, 0, 400, locale);
+      const subjects = await getCurriculaBySpecialtyKey(specialtyKey, 0, 400, locale);
       if (cancelled) return;
 
       const clos = await Promise.all(
-        subjects.map((s) => getCloBySubjectCode(s.subject_code, locale))
+        subjects.map((s) => getCloBySubjectKey(s.subject_key, locale))
       );
       if (cancelled) return;
 
@@ -55,7 +55,7 @@ export default function CourseOutcomes({
     return () => {
       cancelled = true;
     };
-  }, [specialtyCode, locale]);
+  }, [specialtyKey, locale]);
 
   return (
     <>
@@ -87,14 +87,14 @@ export default function CourseOutcomes({
       ) : (
         <div className="space-y-5">
           {rows.map(({ subject, clos }) => (
-            <Card key={subject.subject_code} className="overflow-hidden">
+            <Card key={subject.subject_key} className="overflow-hidden">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-sunken)] px-6 py-4">
                 <div className="flex min-w-0 items-center gap-3">
                   <CodeChip>{subject.subject_code}</CodeChip>
                   <h3 className="truncate text-[15px] font-bold">{subject.subject_name}</h3>
                 </div>
                 <Link
-                  href={subjectPath(locale, specialtyCode, subject.subject_code)}
+                  href={subjectPath(locale, specialtyKey, subject.subject_key)}
                   className="group inline-flex shrink-0 items-center gap-1.5 text-[12.5px] font-bold text-[var(--brand-accent)]"
                 >
                   {tr(locale, "Fənnə bax", "Open subject")}

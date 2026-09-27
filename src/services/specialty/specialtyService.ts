@@ -3,6 +3,9 @@ import apiClient from "../../util/apiClient";
 export interface Specialty {
     cafedra_name?: string;
     specialty_name: string;
+    /** Immutable identity: use for URLs and React keys. */
+    specialty_key: string;
+    /** Display code; not unique. */
     specialty_code: string;
     degree?: number;
 }
@@ -14,6 +17,7 @@ export interface SpecialtyPayload {
 }
 
 export interface SpecialtyDetails {
+    specialty_code: string;
     specialty_name: string;
     /** 1 = bachelor, 2 = master. */
     degree: 1 | 2;
@@ -68,23 +72,24 @@ export const getAllSpecialties = async (
 };
 
 /**
- * A single programme's name and degree level.
+ * A single programme's display code, name and degree level.
  *
- * Returns null when the code is unknown. The previous version returned the
+ * Returns null when the key is unknown. The previous version returned the
  * sentinel strings "ERROR" / "NOT FOUND", which callers then rendered as the
  * page's <h1>.
  */
 export const getSpecialtyDetails = async (
-    specialtyCode: string | undefined,
+    specialtyKey: string | undefined,
     lang_code: string,
 ): Promise<SpecialtyDetails | null> => {
-    if (!specialtyCode) return null;
+    if (!specialtyKey) return null;
     try {
         const response = await apiClient.get(
-            `/api/specialty/${encodeURIComponent(specialtyCode)}?lang=${lang_code}`
+            `/api/specialty/${encodeURIComponent(specialtyKey)}?lang=${lang_code}`
         );
         if (response.data.statusCode === 200 && response.data.specialty_name) {
             return {
+                specialty_code: response.data.specialty_code ?? "",
                 specialty_name: response.data.specialty_name,
                 degree: response.data.degree === 2 ? 2 : 1,
             };

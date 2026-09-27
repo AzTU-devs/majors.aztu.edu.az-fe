@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { tr } from "@/lib/i18n";
 import type { Locale } from "@/lib/site";
 import { getCompetencyBySpecialty, type Competency } from "@/services/competency/competencyService";
-import { getCurriculaBySpecialtyCode, type Subject } from "@/services/curricula/curricula";
+import { getCurriculaBySpecialtyKey, type Subject } from "@/services/curricula/curricula";
 import { getMatchedSubjectsByCompetency } from "@/services/competencyMatch/competencyMatchService";
 import { EmptyState, SectionHeading, Skeleton, TableFrame } from "@/components/ui/primitives";
 
@@ -24,10 +24,10 @@ const Tick = (
  */
 export default function CompetencyMatrix({
   locale,
-  specialtyCode,
+  specialtyKey,
 }: {
   locale: Locale;
-  specialtyCode: string;
+  specialtyKey: string;
 }) {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [competencies, setCompetencies] = useState<Competency[]>([]);
@@ -35,23 +35,24 @@ export default function CompetencyMatrix({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!specialtyCode) return;
+    if (!specialtyKey) return;
     let cancelled = false;
 
     (async () => {
       setLoading(true);
       try {
         const [comps, subs] = await Promise.all([
-          getCompetencyBySpecialty(specialtyCode, locale),
-          getCurriculaBySpecialtyCode(specialtyCode, 0, 400, locale),
+          getCompetencyBySpecialty(specialtyKey, locale),
+          getCurriculaBySpecialtyKey(specialtyKey, 0, 400, locale),
         ]);
 
         const results = await Promise.all(
           comps.map((c) => getMatchedSubjectsByCompetency(c.competency_code))
         );
+        // Joined on subject_key: subject codes are not unique.
         const keys = new Set<string>();
         comps.forEach((c, i) => {
-          results[i].forEach((m) => keys.add(`${c.competency_code}__${m.subject_code}`));
+          results[i].forEach((m) => keys.add(`${c.competency_code}__${m.subject_key}`));
         });
 
         if (cancelled) return;
@@ -66,7 +67,7 @@ export default function CompetencyMatrix({
     return () => {
       cancelled = true;
     };
-  }, [locale, specialtyCode]);
+  }, [locale, specialtyKey]);
 
   return (
     <>
@@ -110,7 +111,7 @@ export default function CompetencyMatrix({
                 </th>
                 {subjects.map((s) => (
                   <th
-                    key={s.subject_code}
+                    key={s.subject_key}
                     scope="col"
                     title={s.subject_name}
                     className="border-b border-[var(--border-subtle)] px-2 py-3 text-center font-mono text-[10.5px] font-semibold text-[var(--text-muted)]"
@@ -135,10 +136,10 @@ export default function CompetencyMatrix({
                     </span>
                   </th>
                   {subjects.map((s) => {
-                    const hit = matches.has(`${c.competency_code}__${s.subject_code}`);
+                    const hit = matches.has(`${c.competency_code}__${s.subject_key}`);
                     return (
                       <td
-                        key={s.subject_code}
+                        key={s.subject_key}
                         className="border-b border-[var(--border-subtle)] px-2 py-3 text-center"
                       >
                         {hit ? (

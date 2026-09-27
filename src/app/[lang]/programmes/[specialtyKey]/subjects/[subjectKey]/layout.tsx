@@ -10,8 +10,8 @@ import { SITE_NAME, UNIVERSITY, localeAlternates, resolveLocale } from "@/lib/si
 
 interface RouteParams {
   lang: string;
-  specialtyCode: string;
-  subjectCode: string;
+  specialtyKey: string;
+  subjectKey: string;
 }
 
 export async function generateMetadata({
@@ -21,12 +21,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const p = await params;
   const locale = resolveLocale(p.lang);
-  const specialtyCode = decodeURIComponent(p.specialtyCode);
-  const subjectCode = decodeURIComponent(p.subjectCode);
+  const specialtyKey = decodeURIComponent(p.specialtyKey);
+  const subjectKey = decodeURIComponent(p.subjectKey);
 
   const [subject, specialty] = await Promise.all([
-    fetchSubject(subjectCode, locale),
-    fetchSpecialty(specialtyCode, locale),
+    fetchSubject(subjectKey, locale),
+    fetchSpecialty(specialtyKey, locale),
   ]);
   const az = locale === "az";
 
@@ -44,10 +44,10 @@ export async function generateMetadata({
   const description =
     subject.subject_description?.slice(0, 300) ||
     (az
-      ? `${subject.subject_name} (${subjectCode}) fənni${
+      ? `${subject.subject_name} (${subject.subject_code}) fənni${
           specialty ? ` — ${specialty.specialty_name} ixtisası` : ""
         }: sillabus, kredit, mövzu planı, təlim nəticələri və ədəbiyyat siyahısı.`
-      : `The ${subject.subject_name} (${subjectCode}) course${
+      : `The ${subject.subject_name} (${subject.subject_code}) course${
           specialty ? ` in the ${specialty.specialty_name} programme` : ""
         }: syllabus, credits, topic plan, learning outcomes and reading list.`);
 
@@ -57,7 +57,7 @@ export async function generateMetadata({
     title: { absolute: `${title} | ${UNIVERSITY.shortName}` },
     description,
     alternates: localeAlternates(
-      `/programmes/${encodeURIComponent(specialtyCode)}/subjects/${encodeURIComponent(subjectCode)}`,
+      `/programmes/${encodeURIComponent(specialtyKey)}/subjects/${encodeURIComponent(subjectKey)}`,
       locale
     ),
     openGraph: { title, description, type: "article" },
@@ -73,19 +73,21 @@ export default async function SubjectLayout({
 }) {
   const p = await params;
   const locale = resolveLocale(p.lang);
-  const specialtyCode = decodeURIComponent(p.specialtyCode);
-  const subjectCode = decodeURIComponent(p.subjectCode);
+  const specialtyKey = decodeURIComponent(p.specialtyKey);
+  const subjectKey = decodeURIComponent(p.subjectKey);
 
   const [subject, specialty] = await Promise.all([
-    fetchSubject(subjectCode, locale),
-    fetchSpecialty(specialtyCode, locale),
+    fetchSubject(subjectKey, locale),
+    fetchSpecialty(specialtyKey, locale),
   ]);
 
   if (!subject) notFound();
 
   const az = locale === "az";
-  const specialtyName = specialty?.specialty_name ?? specialtyCode;
-  const path = subjectPath(locale, specialtyCode, subjectCode);
+  // The URL segment is a key, not something to show a reader, so a failed
+  // programme lookup falls back to a generic label.
+  const specialtyName = specialty?.specialty_name ?? (az ? "İxtisas" : "Programme");
+  const path = subjectPath(locale, specialtyKey, subjectKey);
 
   return (
     <>
@@ -94,16 +96,16 @@ export default async function SubjectLayout({
           courseSchema({
             locale,
             name: subject.subject_name,
-            code: subjectCode,
+            code: subject.subject_code,
             path,
             description: subject.subject_description,
           }),
           breadcrumbSchema([
             { name: SITE_NAME[locale], path: `/${locale}` },
-            { name: specialtyName, path: programmePath(locale, specialtyCode) },
+            { name: specialtyName, path: programmePath(locale, specialtyKey) },
             {
               name: az ? "Tədris planı" : "Curriculum",
-              path: programmePath(locale, specialtyCode, "subjects"),
+              path: programmePath(locale, specialtyKey, "subjects"),
             },
             { name: subject.subject_name, path },
           ])
@@ -111,9 +113,10 @@ export default async function SubjectLayout({
       />
       <SubjectShell
         locale={locale}
-        specialtyCode={specialtyCode}
+        specialtyKey={specialtyKey}
         specialtyName={specialtyName}
-        subjectCode={subjectCode}
+        subjectKey={subjectKey}
+        subjectCode={subject.subject_code}
         subjectName={subject.subject_name}
       >
         {children}

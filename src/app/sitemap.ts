@@ -53,11 +53,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entries.push(...localized(`/faculties/${encodeURIComponent(f.faculty_code)}`, 0.6, "monthly"));
   }
 
+  // De-duplicated by key: two programmes may share a display code.
   const seen = new Set<string>();
   for (const s of [...bachelors, ...masters]) {
-    if (seen.has(s.specialty_code)) continue;
-    seen.add(s.specialty_code);
-    const base = `/programmes/${encodeURIComponent(s.specialty_code)}`;
+    if (seen.has(s.specialty_key)) continue;
+    seen.add(s.specialty_key);
+    const base = `/programmes/${encodeURIComponent(s.specialty_key)}`;
     entries.push(...localized(base, 0.8, "monthly"));
     // The high-value sub-pages of a programme.
     for (const sub of ["subjects", "program-learning-outcomes", "graduate-career-opportunities"]) {

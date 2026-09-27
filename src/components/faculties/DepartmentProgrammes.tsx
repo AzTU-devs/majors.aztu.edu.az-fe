@@ -66,13 +66,13 @@ export default function DepartmentProgrammes({
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((s, i) => (
             <motion.li
-              key={s.specialty_code}
+              key={s.specialty_key}
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.04 }}
             >
-              <Link href={programmePath(locale, s.specialty_code)} className="block h-full">
+              <Link href={programmePath(locale, s.specialty_key)} className="block h-full">
                 <Card interactive className="flex h-full flex-col p-5">
                   <div className="mb-3.5 flex items-center justify-between gap-2">
                     <Badge tone="accent">

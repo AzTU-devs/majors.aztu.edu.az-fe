@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { tr } from "@/lib/i18n";
 import type { Locale } from "@/lib/site";
-import { getCloBySubjectCode, type Clo } from "@/services/clo/clo";
+import { getCloBySubjectKey, type Clo } from "@/services/clo/clo";
 import { getPloBySpecialty, type PloInterface } from "@/services/plo/ploService";
 import { getCloPloMatchesBySubject } from "@/services/cloPloMatch/cloPloMatchService";
 import { EmptyState, SectionHeading, Skeleton, TableFrame } from "@/components/ui/primitives";
@@ -21,12 +21,12 @@ const Tick = (
  */
 export default function CloPloMatrix({
   locale,
-  specialtyCode,
-  subjectCode,
+  specialtyKey,
+  subjectKey,
 }: {
   locale: Locale;
-  specialtyCode: string;
-  subjectCode: string;
+  specialtyKey: string;
+  subjectKey: string;
 }) {
   const [clos, setClos] = useState<Clo[]>([]);
   const [plos, setPlos] = useState<PloInterface[]>([]);
@@ -39,9 +39,9 @@ export default function CloPloMatrix({
 
     (async () => {
       const [cloList, ploList, matchList] = await Promise.all([
-        getCloBySubjectCode(subjectCode, locale),
-        getPloBySpecialty(specialtyCode, locale),
-        getCloPloMatchesBySubject(subjectCode),
+        getCloBySubjectKey(subjectKey, locale),
+        getPloBySpecialty(specialtyKey, locale),
+        getCloPloMatchesBySubject(subjectKey),
       ]);
       if (cancelled) return;
       setClos(cloList);
@@ -53,7 +53,7 @@ export default function CloPloMatrix({
     return () => {
       cancelled = true;
     };
-  }, [specialtyCode, subjectCode, locale]);
+  }, [specialtyKey, subjectKey, locale]);
 
   return (
     <>

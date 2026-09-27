@@ -13,7 +13,7 @@ import {
   statusLabel,
 } from "@/constants/subjectMeta";
 import { getSubjectDetails, type SubjectDetails } from "@/services/curricula/curricula";
-import { getCloBySubjectCode, type Clo } from "@/services/clo/clo";
+import { getCloBySubjectKey, type Clo } from "@/services/clo/clo";
 import {
   ArrowRight,
   Card,
@@ -26,12 +26,12 @@ import {
 
 export default function SubjectOverview({
   locale,
-  specialtyCode,
-  subjectCode,
+  specialtyKey,
+  subjectKey,
 }: {
   locale: Locale;
-  specialtyCode: string;
-  subjectCode: string;
+  specialtyKey: string;
+  subjectKey: string;
 }) {
   const [subject, setSubject] = useState<SubjectDetails | null>(null);
   const [clos, setClos] = useState<Clo[]>([]);
@@ -41,8 +41,8 @@ export default function SubjectOverview({
     let cancelled = false;
     setLoading(true);
     Promise.all([
-      getSubjectDetails(subjectCode, locale),
-      getCloBySubjectCode(subjectCode, locale),
+      getSubjectDetails(subjectKey, locale),
+      getCloBySubjectKey(subjectKey, locale),
     ])
       .then(([details, cloList]) => {
         if (cancelled) return;
@@ -53,7 +53,7 @@ export default function SubjectOverview({
     return () => {
       cancelled = true;
     };
-  }, [subjectCode, locale]);
+  }, [subjectKey, locale]);
 
   if (loading) {
     return (
@@ -91,7 +91,7 @@ export default function SubjectOverview({
       </div>
 
       {/* Syllabus CTA */}
-      <Link href={subjectPath(locale, specialtyCode, subjectCode, "syllabus")} className="block">
+      <Link href={subjectPath(locale, specialtyKey, subjectKey, "syllabus")} className="block">
         <div className="group relative flex items-center justify-between gap-4 overflow-hidden rounded-2xl bg-navy-700 p-6 text-white transition-transform duration-200 hover:-translate-y-0.5">
           <div
             aria-hidden
@@ -137,7 +137,7 @@ export default function SubjectOverview({
           {tr(locale, "Ümumi məlumat", "General information")}
         </h2>
         <dl>
-          <InfoRow label={tr(locale, "Fənn kodu", "Subject code")} value={<span className="font-mono">{subjectCode}</span>} />
+          <InfoRow label={tr(locale, "Fənn kodu", "Subject code")} value={<span className="font-mono">{subject.subject_code}</span>} />
           <InfoRow label={tr(locale, "Fənnin tipi", "Subject type")} value={statusLabel(subject.status, locale)} />
           <InfoRow
             label={tr(locale, "Təhsil forması", "Form of education")}

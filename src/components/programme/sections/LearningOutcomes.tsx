@@ -9,10 +9,10 @@ import { Card, EmptyState, SectionHeading, Skeleton } from "@/components/ui/prim
 
 export default function LearningOutcomes({
   locale,
-  specialtyCode,
+  specialtyKey,
 }: {
   locale: Locale;
-  specialtyCode: string;
+  specialtyKey: string;
 }) {
   const [plos, setPlos] = useState<PloInterface[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,13 +20,13 @@ export default function LearningOutcomes({
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getPloBySpecialty(specialtyCode, locale)
+    getPloBySpecialty(specialtyKey, locale)
       .then((res) => !cancelled && setPlos(res))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [specialtyCode, locale]);
+  }, [specialtyKey, locale]);
 
   return (
     <>

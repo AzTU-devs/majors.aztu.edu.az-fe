@@ -3,7 +3,7 @@ import apiClient from "../../util/apiClient";
 /** competency_type: 1 = Peşə (job), 2 = İxtisas (specialty/general). */
 export interface Competency {
     id: number;
-    specialty_code: string;
+    specialty_key: string;
     competency_code: string;
     competency_type: number;
     language_code: string;
@@ -11,12 +11,12 @@ export interface Competency {
 }
 
 export const getCompetencyBySpecialty = async (
-    specialtyCode: string,
+    specialtyKey: string,
     lang_code: string,
 ): Promise<Competency[]> => {
     try {
         const response = await apiClient.get(
-            `/api/competency/${encodeURIComponent(specialtyCode)}?lang=${lang_code}`
+            `/api/competency/${encodeURIComponent(specialtyKey)}?lang=${lang_code}`
         );
         if (response.data.statusCode === 200 && Array.isArray(response.data.competencies)) {
             return response.data.competencies as Competency[];

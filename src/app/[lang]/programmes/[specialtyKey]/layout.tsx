@@ -10,7 +10,7 @@ import { SITE_NAME, localeAlternates, resolveLocale } from "@/lib/site";
 
 interface RouteParams {
   lang: string;
-  specialtyCode: string;
+  specialtyKey: string;
 }
 
 export async function generateMetadata({
@@ -18,10 +18,10 @@ export async function generateMetadata({
 }: {
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
-  const { lang, specialtyCode: raw } = await params;
+  const { lang, specialtyKey: raw } = await params;
   const locale = resolveLocale(lang);
-  const specialtyCode = decodeURIComponent(raw);
-  const specialty = await fetchSpecialty(specialtyCode, locale);
+  const specialtyKey = decodeURIComponent(raw);
+  const specialty = await fetchSpecialty(specialtyKey, locale);
   const az = locale === "az";
 
   if (!specialty) {
@@ -40,13 +40,13 @@ export async function generateMetadata({
     : `${specialty.specialty_name} — ${degreeEn} programme`;
 
   const description = az
-    ? `${specialty.specialty_name} (${specialtyCode}) ${degreeAz.toLowerCase()} təhsil proqramı: tədris planı, fənlər, təlim nəticələri, səriştələr və məzun karyera imkanları — Azərbaycan Texniki Universiteti.`
-    : `${specialty.specialty_name} (${specialtyCode}) ${degreeEn} degree programme at Azerbaijan Technical University: curriculum, subjects, learning outcomes, competencies and graduate career paths.`;
+    ? `${specialty.specialty_name} (${specialty.specialty_code}) ${degreeAz.toLowerCase()} təhsil proqramı: tədris planı, fənlər, təlim nəticələri, səriştələr və məzun karyera imkanları — Azərbaycan Texniki Universiteti.`
+    : `${specialty.specialty_name} (${specialty.specialty_code}) ${degreeEn} degree programme at Azerbaijan Technical University: curriculum, subjects, learning outcomes, competencies and graduate career paths.`;
 
   return {
     title,
     description,
-    alternates: localeAlternates(`/programmes/${encodeURIComponent(specialtyCode)}`, locale),
+    alternates: localeAlternates(`/programmes/${encodeURIComponent(specialtyKey)}`, locale),
     openGraph: { title, description, type: "article" },
   };
 }
@@ -58,17 +58,17 @@ export default async function ProgrammeLayout({
   children: React.ReactNode;
   params: Promise<RouteParams>;
 }) {
-  const { lang, specialtyCode: raw } = await params;
+  const { lang, specialtyKey: raw } = await params;
   const locale = resolveLocale(lang);
-  const specialtyCode = decodeURIComponent(raw);
-  const specialty = await fetchSpecialty(specialtyCode, locale);
+  const specialtyKey = decodeURIComponent(raw);
+  const specialty = await fetchSpecialty(specialtyKey, locale);
 
-  // An unknown code renders the 404 page rather than a shell with an empty
+  // An unknown key renders the 404 page rather than a shell with an empty
   // title and every tab leading nowhere.
   if (!specialty) notFound();
 
   const az = locale === "az";
-  const path = programmePath(locale, specialtyCode);
+  const path = programmePath(locale, specialtyKey);
 
   return (
     <>
@@ -77,7 +77,7 @@ export default async function ProgrammeLayout({
           programmeSchema({
             locale,
             name: specialty.specialty_name,
-            code: specialtyCode,
+            code: specialty.specialty_code,
             path,
             degree: specialty.degree,
           }),
@@ -96,7 +96,8 @@ export default async function ProgrammeLayout({
       />
       <ProgrammeShell
         locale={locale}
-        specialtyCode={specialtyCode}
+        specialtyKey={specialtyKey}
+        specialtyCode={specialty.specialty_code}
         specialtyName={specialty.specialty_name}
         degree={specialty.degree}
       >

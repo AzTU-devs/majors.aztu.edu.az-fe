@@ -7,11 +7,11 @@ export interface CloPloMatch {
 
 // Returns the list of CLO→PLO matches for the CLOs that belong to a subject.
 export const getCloPloMatchesBySubject = async (
-    subjectCode: string
+    subjectKey: string
 ): Promise<CloPloMatch[]> => {
     try {
         const response = await apiClient.get(
-            `/api/clo-plo-match/subject/${encodeURIComponent(subjectCode)}`
+            `/api/clo-plo-match/subject/${encodeURIComponent(subjectKey)}`
         );
         if (response.data.statusCode === 200 && Array.isArray(response.data.data)) {
             return response.data.data;

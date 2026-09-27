@@ -27,6 +27,9 @@ async function getJson<T>(path: string, fallback: T, revalidate = REVALIDATE_SEC
 }
 
 export interface SpecialtySummary {
+  /** Immutable identity: use for URLs, React keys and de-duplication. */
+  specialty_key: string;
+  /** Display code; not unique. */
   specialty_code: string;
   specialty_name: string;
   cafedra_name?: string;
@@ -39,6 +42,9 @@ export interface FacultySummary {
 }
 
 export interface SubjectSummary {
+  /** Immutable identity: use for URLs and React keys. */
+  subject_key: string;
+  /** Display code; not unique. */
   subject_code: string;
   subject_name: string;
   semester?: number;
@@ -68,43 +74,46 @@ export async function fetchFaculties(locale: Locale): Promise<FacultySummary[]> 
 }
 
 export async function fetchSpecialty(
-  code: string,
+  key: string,
   locale: Locale
-): Promise<{ specialty_name: string; degree: 1 | 2 } | null> {
+): Promise<{ specialty_code: string; specialty_name: string; degree: 1 | 2 } | null> {
   const data = await getJson<{
     statusCode?: number;
+    specialty_code?: string;
     specialty_name?: string;
     degree?: number;
-  }>(`/api/specialty/${encodeURIComponent(code)}?lang=${locale}`, {});
+  }>(`/api/specialty/${encodeURIComponent(key)}?lang=${locale}`, {});
   if (!data.specialty_name) return null;
   return {
+    specialty_code: data.specialty_code ?? "",
     specialty_name: data.specialty_name,
     degree: data.degree === 2 ? 2 : 1,
   };
 }
 
 export async function fetchSubject(
-  code: string,
+  key: string,
   locale: Locale
-): Promise<{ subject_name: string; subject_description?: string } | null> {
+): Promise<{ subject_code: string; subject_name: string; subject_description?: string } | null> {
   const data = await getJson<{
     statusCode?: number;
-    subject_details?: { subject_name?: string; subject_description?: string };
-  }>(`/api/curricula/${encodeURIComponent(code)}?lang=${locale}`, {});
+    subject_details?: { subject_code?: string; subject_name?: string; subject_description?: string };
+  }>(`/api/curricula/${encodeURIComponent(key)}?lang=${locale}`, {});
   const details = data.subject_details;
   if (!details?.subject_name) return null;
   return {
+    subject_code: details.subject_code ?? "",
     subject_name: details.subject_name,
     subject_description: details.subject_description,
   };
 }
 
 export async function fetchCurriculum(
-  specialtyCode: string,
+  specialtyKey: string,
   locale: Locale
 ): Promise<SubjectSummary[]> {
   const data = await getJson<{ statusCode?: number; subjects?: SubjectSummary[] }>(
-    `/api/curricula/${encodeURIComponent(specialtyCode)}/subjects?start=0&end=400&lang=${locale}`,
+    `/api/curricula/${encodeURIComponent(specialtyKey)}/subjects?start=0&end=400&lang=${locale}`,
     {}
   );
   return Array.isArray(data.subjects) ? data.subjects : [];

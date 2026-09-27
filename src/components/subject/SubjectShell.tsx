@@ -19,21 +19,26 @@ export const SUBJECT_SECTIONS = [
 /** Frame shared by every page of a single subject. */
 export default function SubjectShell({
   locale,
-  specialtyCode,
+  specialtyKey,
   specialtyName,
+  subjectKey,
   subjectCode,
   subjectName,
   children,
 }: {
   locale: Locale;
-  specialtyCode: string;
+  /** Identifies the programme in links. */
+  specialtyKey: string;
   specialtyName: string;
+  /** Identifies the subject in links. */
+  subjectKey: string;
+  /** Display-only; not unique. */
   subjectCode: string;
   subjectName: string;
   children: ReactNode;
 }) {
   const pathname = usePathname() ?? "";
-  const base = subjectPath(locale, specialtyCode, subjectCode);
+  const base = subjectPath(locale, specialtyKey, subjectKey);
   const az = locale === "az";
 
   const activeSlug = (() => {
@@ -53,10 +58,10 @@ export default function SubjectShell({
         title={subjectName}
         breadcrumbs={[
           { label: az ? "Ana səhifə" : "Home", href: `/${locale}` },
-          { label: specialtyName, href: programmePath(locale, specialtyCode) },
+          { label: specialtyName, href: programmePath(locale, specialtyKey) },
           {
             label: az ? "Tədris planı" : "Curriculum",
-            href: programmePath(locale, specialtyCode, "subjects"),
+            href: programmePath(locale, specialtyKey, "subjects"),
           },
           { label: subjectName },
         ]}
@@ -67,7 +72,7 @@ export default function SubjectShell({
         <Container>
           <nav aria-label={az ? "Fənn bölmələri" : "Subject sections"} className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto py-2.5">
             {SUBJECT_SECTIONS.map((section) => {
-              const href = subjectPath(locale, specialtyCode, subjectCode, section.slug);
+              const href = subjectPath(locale, specialtyKey, subjectKey, section.slug);
               const active = activeSlug === section.slug;
               return (
                 <Link

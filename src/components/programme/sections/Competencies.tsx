@@ -22,10 +22,10 @@ const GROUPS = [
 
 export default function Competencies({
   locale,
-  specialtyCode,
+  specialtyKey,
 }: {
   locale: Locale;
-  specialtyCode: string;
+  specialtyKey: string;
 }) {
   const [items, setItems] = useState<Competency[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,13 +33,13 @@ export default function Competencies({
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getCompetencyBySpecialty(specialtyCode, locale)
+    getCompetencyBySpecialty(specialtyKey, locale)
       .then((res) => !cancelled && setItems(res))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [specialtyCode, locale]);
+  }, [specialtyKey, locale]);
 
   return (
     <>

@@ -4,14 +4,14 @@ import { resolveLocale } from "@/lib/site";
 export default async function Page({
   params,
 }: {
-  params: Promise<{ lang: string; specialtyCode: string; subjectCode: string }>;
+  params: Promise<{ lang: string; specialtyKey: string; subjectKey: string }>;
 }) {
-  const { lang, specialtyCode, subjectCode } = await params;
+  const { lang, specialtyKey, subjectKey } = await params;
   return (
     <SubjectOverview
       locale={resolveLocale(lang)}
-      specialtyCode={decodeURIComponent(specialtyCode)}
-      subjectCode={decodeURIComponent(subjectCode)}
+      specialtyKey={decodeURIComponent(specialtyKey)}
+      subjectKey={decodeURIComponent(subjectKey)}
     />
   );
 }

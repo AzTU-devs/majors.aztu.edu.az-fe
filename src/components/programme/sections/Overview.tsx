@@ -9,10 +9,10 @@ import { Card, EmptyState, SectionHeading, Skeleton } from "@/components/ui/prim
 
 export default function Overview({
   locale,
-  specialtyCode,
+  specialtyKey,
 }: {
   locale: Locale;
-  specialtyCode: string;
+  specialtyKey: string;
 }) {
   const [chars, setChars] = useState<SpecialtyChar | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ export default function Overview({
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getSpecialtyChar(specialtyCode, locale)
+    getSpecialtyChar(specialtyKey, locale)
       .then((res) => {
         if (!cancelled) setChars(res);
       })
@@ -30,7 +30,7 @@ export default function Overview({
     return () => {
       cancelled = true;
     };
-  }, [specialtyCode, locale]);
+  }, [specialtyKey, locale]);
 
   if (loading) {
     return (

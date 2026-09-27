@@ -16,10 +16,10 @@ const BriefcaseIcon = (
 
 export default function CareerPaths({
   locale,
-  specialtyCode,
+  specialtyKey,
 }: {
   locale: Locale;
-  specialtyCode: string;
+  specialtyKey: string;
 }) {
   const [items, setItems] = useState<Gco[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,13 +27,13 @@ export default function CareerPaths({
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getGcosBySpecailty(specialtyCode, locale)
+    getGcosBySpecailty(specialtyKey, locale)
       .then((res) => !cancelled && setItems(res))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [specialtyCode, locale]);
+  }, [specialtyKey, locale]);
 
   return (
     <>

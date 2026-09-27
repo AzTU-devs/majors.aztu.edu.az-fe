@@ -31,25 +31,29 @@ export type ProgrammeSection = (typeof PROGRAMME_SECTIONS)[number]["slug"];
  */
 export default function ProgrammeShell({
   locale,
+  specialtyKey,
   specialtyCode,
   specialtyName,
   degree,
   children,
 }: {
   locale: Locale;
+  /** Identifies the programme in links. */
+  specialtyKey: string;
+  /** Display-only; not unique. */
   specialtyCode: string;
   specialtyName: string;
   degree: 1 | 2;
   children: ReactNode;
 }) {
   const pathname = usePathname() ?? "";
-  const base = programmePath(locale, specialtyCode);
+  const base = programmePath(locale, specialtyKey);
   const az = locale === "az";
 
   // A single subject renders its own masthead and tabs (SubjectShell). Next
   // nests this layout around those routes, so without this the page showed two
   // stacked heroes and two tab strips.
-  // Segment-based so it holds for codes that percent-encode (e.g. "6005009 (050509)").
+  // Segment-based so it holds for keys that percent-encode (e.g. "6005009 (050509)").
   const segments = pathname.split("/").filter(Boolean);
   const subjectsAt = segments.indexOf("subjects");
   const isSubjectPage = subjectsAt !== -1 && segments.length > subjectsAt + 1;
@@ -99,7 +103,7 @@ export default function ProgrammeShell({
         <Container>
           <nav aria-label={az ? "İxtisas bölmələri" : "Programme sections"} className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto py-2.5">
             {PROGRAMME_SECTIONS.map((section) => {
-              const href = programmePath(locale, specialtyCode, section.slug);
+              const href = programmePath(locale, specialtyKey, section.slug);
               const active = activeSlug === section.slug;
               return (
                 <Link

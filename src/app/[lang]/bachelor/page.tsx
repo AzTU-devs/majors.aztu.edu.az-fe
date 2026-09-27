@@ -48,7 +48,7 @@ export default async function Page({ params }: { params: Promise<{ lang: string 
               "@type": "ListItem",
               position: i + 1,
               name: s.specialty_name,
-              url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://majors.aztu.edu.az"}/${locale}/programmes/${encodeURIComponent(s.specialty_code)}`,
+              url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://majors.aztu.edu.az"}/${locale}/programmes/${encodeURIComponent(s.specialty_key)}`,
             })),
           }
         )}

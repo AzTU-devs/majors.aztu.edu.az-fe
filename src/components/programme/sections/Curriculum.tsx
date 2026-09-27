@@ -7,7 +7,7 @@ import { tr } from "@/lib/i18n";
 import type { Locale } from "@/lib/site";
 import { subjectPath } from "@/lib/routes";
 import { semesterLabel, statusLabel } from "@/constants/subjectMeta";
-import { getCurriculaBySpecialtyCode, type Subject } from "@/services/curricula/curricula";
+import { getCurriculaBySpecialtyKey, type Subject } from "@/services/curricula/curricula";
 import {
   ArrowRight,
   Badge,
@@ -23,10 +23,10 @@ type ViewMode = "grid" | "table";
 
 export default function Curriculum({
   locale,
-  specialtyCode,
+  specialtyKey,
 }: {
   locale: Locale;
-  specialtyCode: string;
+  specialtyKey: string;
 }) {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,13 +38,13 @@ export default function Curriculum({
     setLoading(true);
     // 400 covers a full four-year plan; the old limit of 100 silently truncated
     // longer curricula.
-    getCurriculaBySpecialtyCode(specialtyCode, 0, 400, locale)
+    getCurriculaBySpecialtyKey(specialtyKey, 0, 400, locale)
       .then((res) => !cancelled && setSubjects(res))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [specialtyCode, locale]);
+  }, [specialtyKey, locale]);
 
   const filtered = useMemo(
     () => (semester === null ? subjects : subjects.filter((s) => s.semester === semester)),
@@ -180,8 +180,8 @@ export default function Curriculum({
               {view === "grid" ? (
                 <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {list.map((sub) => (
-                    <li key={sub.subject_code}>
-                      <Link href={subjectPath(locale, specialtyCode, sub.subject_code)} className="block h-full">
+                    <li key={sub.subject_key}>
+                      <Link href={subjectPath(locale, specialtyKey, sub.subject_key)} className="block h-full">
                         <Card interactive className="relative flex h-full flex-col overflow-hidden p-6">
                           <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-navy-700 to-sky-brand-400" />
                           <div className="flex items-center justify-between gap-2">
@@ -243,7 +243,7 @@ export default function Curriculum({
                       <tbody>
                         {list.map((sub) => (
                           <tr
-                            key={sub.subject_code}
+                            key={sub.subject_key}
                             className="border-b border-[var(--border-subtle)] transition-colors last:border-0 hover:bg-[var(--surface-sunken)]"
                           >
                             <td className="px-4 py-3">
@@ -251,7 +251,7 @@ export default function Curriculum({
                             </td>
                             <td className="px-4 py-3">
                               <Link
-                                href={subjectPath(locale, specialtyCode, sub.subject_code)}
+                                href={subjectPath(locale, specialtyKey, sub.subject_key)}
                                 className="text-[14px] font-semibold text-[var(--text-strong)] hover:text-[var(--brand-accent)]"
                               >
                                 {sub.subject_name}

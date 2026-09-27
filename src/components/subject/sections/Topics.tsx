@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { tr } from "@/lib/i18n";
 import type { Locale } from "@/lib/site";
 import { getTopics, type Topic } from "@/services/topic/topic";
-import { getTloByTopicCode, type Tlo } from "@/services/tlo/tloService";
+import { getTloByTopicKey, type Tlo } from "@/services/tlo/tloService";
 import { Card, EmptyState, SectionHeading, Skeleton } from "@/components/ui/primitives";
 
 const TYPE_LABEL: Record<number, { az: string; en: string }> = {
@@ -21,10 +21,10 @@ interface TopicWithTlos extends Topic {
 
 export default function Topics({
   locale,
-  subjectCode,
+  subjectKey,
 }: {
   locale: Locale;
-  subjectCode: string;
+  subjectKey: string;
 }) {
   const [topics, setTopics] = useState<TopicWithTlos[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,12 +34,12 @@ export default function Topics({
     setLoading(true);
 
     (async () => {
-      const list = await getTopics(subjectCode, 0, 200, locale);
+      const list = await getTopics(subjectKey, 0, 200, locale);
       if (cancelled) return;
       const withTlos = await Promise.all(
         list.map(async (topic) => ({
           ...topic,
-          tlos: await getTloByTopicCode(topic.topic_code, locale),
+          tlos: await getTloByTopicKey(topic.topic_key, locale),
         }))
       );
       if (cancelled) return;
@@ -50,7 +50,7 @@ export default function Topics({
     return () => {
       cancelled = true;
     };
-  }, [subjectCode, locale]);
+  }, [subjectKey, locale]);
 
   return (
     <>
@@ -82,7 +82,7 @@ export default function Topics({
       ) : (
         <ol className="space-y-3">
           {topics.map((topic, i) => (
-            <li key={topic.topic_code}>
+            <li key={topic.topic_key}>
               <Card className="p-6">
                 <div className="flex items-start gap-4">
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--brand-tint)] text-[13px] font-extrabold text-[var(--brand-accent)]">
@@ -91,6 +91,11 @@ export default function Topics({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                       <h3 className="text-[15.5px] font-bold">{topic.topic_name}</h3>
+                      {topic.topic_code?.trim() && (
+                        <span className="font-mono text-[11.5px] font-semibold text-[var(--text-muted)]">
+                          {topic.topic_code}
+                        </span>
+                      )}
                       {TYPE_LABEL[topic.topic_type] && (
                         <span className="text-[11.5px] font-semibold text-[var(--text-muted)]">
                           {TYPE_LABEL[topic.topic_type][locale]}

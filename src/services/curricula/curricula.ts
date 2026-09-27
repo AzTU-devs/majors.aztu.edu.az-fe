@@ -1,6 +1,9 @@
 import apiClient from "../../util/apiClient";
 
 export interface Subject {
+    /** Immutable identity: use for URLs, React keys and cross-endpoint joins. */
+    subject_key: string;
+    /** Display code; not unique. */
     subject_code: string;
     subject_name: string;
     semester: number;
@@ -18,6 +21,7 @@ export interface AssessmentRow {
 }
 
 export interface SubjectDetails {
+    subject_key: string;
     subject_code: string;
     subject_name: string;
     subject_description: string;
@@ -35,15 +39,15 @@ export interface SubjectDetails {
 }
 
 /** All subjects of a programme. Always resolves to an array. */
-export const getCurriculaBySpecialtyCode = async (
-    specialtyCode: string,
+export const getCurriculaBySpecialtyKey = async (
+    specialtyKey: string,
     start: number,
     end: number,
     lang_code: string,
 ): Promise<Subject[]> => {
     try {
         const response = await apiClient.get(
-            `/api/curricula/${encodeURIComponent(specialtyCode)}/subjects?start=${start}&end=${end}&lang=${lang_code}`
+            `/api/curricula/${encodeURIComponent(specialtyKey)}/subjects?start=${start}&end=${end}&lang=${lang_code}`
         );
         if (response.data.statusCode === 200 && Array.isArray(response.data.subjects)) {
             return response.data.subjects as Subject[];
@@ -54,15 +58,15 @@ export const getCurriculaBySpecialtyCode = async (
     }
 };
 
-/** One subject's full record, or null when the code is unknown. */
+/** One subject's full record, or null when the key is unknown. */
 export const getSubjectDetails = async (
-    subjectCode: string,
+    subjectKey: string,
     lang_code: string,
 ): Promise<SubjectDetails | null> => {
-    if (!subjectCode) return null;
+    if (!subjectKey) return null;
     try {
         const response = await apiClient.get(
-            `/api/curricula/${encodeURIComponent(subjectCode)}?lang=${lang_code}`
+            `/api/curricula/${encodeURIComponent(subjectKey)}?lang=${lang_code}`
         );
         if (response.data.statusCode === 200 && response.data.subject_details) {
             return response.data.subject_details as SubjectDetails;

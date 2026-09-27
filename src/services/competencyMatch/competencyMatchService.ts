@@ -1,7 +1,7 @@
 import apiClient from "../../util/apiClient";
 
 export interface SubjectCompetencyMatch {
-    subject_code: string;
+    subject_key: string;
     competency_code: string;
 }
 

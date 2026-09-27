@@ -13,9 +13,9 @@ import {
   teachingMethodLabel,
 } from "@/constants/subjectMeta";
 import { getSubjectDetails, type SubjectDetails } from "@/services/curricula/curricula";
-import { getCloBySubjectCode, type Clo } from "@/services/clo/clo";
+import { getCloBySubjectKey, type Clo } from "@/services/clo/clo";
 import { getTopics, type Topic } from "@/services/topic/topic";
-import { getTloByTopicCode, type Tlo } from "@/services/tlo/tloService";
+import { getTloByTopicKey, type Tlo } from "@/services/tlo/tloService";
 import { getLiteratures, type Literature } from "@/services/literature/literatureService";
 import { Card, EmptyState, InfoRow, Skeleton, TableFrame } from "@/components/ui/primitives";
 
@@ -44,10 +44,10 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 
 export default function Syllabus({
   locale,
-  subjectCode,
+  subjectKey,
 }: {
   locale: Locale;
-  subjectCode: string;
+  subjectKey: string;
 }) {
   const [subject, setSubject] = useState<SubjectDetails | null>(null);
   const [clos, setClos] = useState<Clo[]>([]);
@@ -61,17 +61,17 @@ export default function Syllabus({
 
     (async () => {
       const [details, cloList, litList, topicList] = await Promise.all([
-        getSubjectDetails(subjectCode, locale),
-        getCloBySubjectCode(subjectCode, locale),
-        getLiteratures(subjectCode),
-        getTopics(subjectCode, 0, 200, locale),
+        getSubjectDetails(subjectKey, locale),
+        getCloBySubjectKey(subjectKey, locale),
+        getLiteratures(subjectKey),
+        getTopics(subjectKey, 0, 200, locale),
       ]);
       if (cancelled) return;
 
       const withTlos = await Promise.all(
         topicList.map(async (topic) => ({
           ...topic,
-          tlos: await getTloByTopicCode(topic.topic_code, locale),
+          tlos: await getTloByTopicKey(topic.topic_key, locale),
         }))
       );
       if (cancelled) return;
@@ -86,7 +86,7 @@ export default function Syllabus({
     return () => {
       cancelled = true;
     };
-  }, [subjectCode, locale]);
+  }, [subjectKey, locale]);
 
   const methods = parseTeachingMethods(subject?.teaching_methods);
 
@@ -127,7 +127,7 @@ export default function Syllabus({
 
       <Panel title={tr(locale, "Ümumi məlumat", "General information")}>
         <dl>
-          <InfoRow label={tr(locale, "Fənn kodu", "Subject code")} value={<span className="font-mono">{subjectCode}</span>} />
+          <InfoRow label={tr(locale, "Fənn kodu", "Subject code")} value={<span className="font-mono">{subject.subject_code}</span>} />
           <InfoRow label={tr(locale, "Kredit", "Credits")} value={subject.credit ?? "—"} />
           <InfoRow label={tr(locale, "Tələbənin iş yükü", "Student workload")} value={subject.hours_per_week ?? "—"} />
           <InfoRow label={tr(locale, "Semestr", "Semester")} value={semesterLongLabel(subject.semester, locale)} />
@@ -205,12 +205,17 @@ export default function Syllabus({
           <ol className="space-y-3">
             {topics.map((topic, i) => (
               <li
-                key={topic.topic_code}
+                key={topic.topic_key}
                 className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-sunken)] p-4"
               >
                 <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
                   <span className="text-[13px] font-extrabold text-[var(--brand-accent)]">{i + 1}.</span>
                   <span className="text-[14.5px] font-bold text-[var(--text-strong)]">{topic.topic_name}</span>
+                  {topic.topic_code?.trim() && (
+                    <span className="font-mono text-[11.5px] font-semibold text-[var(--text-muted)]">
+                      {topic.topic_code}
+                    </span>
+                  )}
                   {TYPE_LABEL[topic.topic_type] && (
                     <span className="text-[11.5px] font-semibold text-[var(--text-muted)]">
                       {TYPE_LABEL[topic.topic_type][locale]}
