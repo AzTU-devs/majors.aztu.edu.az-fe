@@ -1166,6 +1166,66 @@
     border-radius: 28px;
   }
 
+  /* Faculty tiles in the mosaic open the faculty; the name shows on hover
+     and keyboard focus (always on touch screens, which cannot hover). */
+  .mo-fac {
+    display: block;
+    transition:
+      transform 0.6s var(--ease-out),
+      box-shadow 0.4s;
+  }
+  .mo-fac > svg {
+    transition: transform 0.6s var(--ease-out);
+  }
+  .mo-fac:hover,
+  .mo-fac:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+  .mo-fac:hover > svg,
+  .mo-fac:focus-visible > svg {
+    transform: scale(1.04);
+  }
+  .mo-label {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    padding: 5px 9px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    box-shadow: var(--shadow-sm);
+    font: 600 11.5px/1.3 var(--f-sans);
+    color: var(--ink);
+    opacity: 0;
+    translate: 0 6px;
+    pointer-events: none;
+    transition:
+      opacity 0.25s,
+      translate 0.3s var(--ease-out);
+  }
+  .mo-fac:hover .mo-label,
+  .mo-fac:focus-visible .mo-label {
+    opacity: 1;
+    translate: 0 0;
+  }
+  @media (hover: none) {
+    .mo-label {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+  .mosaic-aside {
+    position: relative;
+    z-index: 2;
+    align-self: center;
+    margin-right: -18px;
+  }
+
   .float-card {
     padding: 10px;
     border-radius: 26px;
@@ -1789,6 +1849,12 @@ svg .grid {
   fill: none;
   stroke: var(--k-200);
   stroke-width: 1px;
+}
+/* Small technical label inside a faculty scene (100-unit canvas). */
+svg text.tag {
+  font: 600 6.2px var(--f-mono);
+  fill: var(--k-700);
+  letter-spacing: 0.03em;
 }
 svg text.dim {
   font: 500 10.5px var(--f-mono);

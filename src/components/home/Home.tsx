@@ -79,7 +79,7 @@ function Hero({ locale, faculties, newest }: Pick<HomeProps, "locale" | "faculti
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_55%_at_0%_100%,var(--navy-tint),transparent_70%),radial-gradient(45%_45%_at_100%_0%,var(--gold-tint),transparent_70%)] opacity-80"
       />
       <div className="pt-6 lg:hidden">
-        <HeroBand />
+        <HeroBand faculties={faculties} />
       </div>
       <div className="wrap grid gap-12 pb-16 pt-10 md:pb-20 lg:grid-cols-12 lg:gap-10 lg:pb-28 lg:pt-14">
         <div className="relative z-10 min-w-0 lg:col-span-6">
@@ -145,10 +145,14 @@ function Hero({ locale, faculties, newest }: Pick<HomeProps, "locale" | "faculti
 
         <div className="relative min-w-0 lg:col-span-6">
           <div className="hidden lg:block">
-            <HeroMosaic />
+            <HeroMosaic
+              locale={locale}
+              faculties={faculties}
+              aside={newest && <NewestCard p={newest} locale={locale} />}
+            />
           </div>
           {newest && (
-            <div className="relative z-10 lg:absolute lg:-bottom-11 lg:-right-4 lg:w-[400px]">
+            <div className="relative z-10 lg:hidden">
               <NewestCard p={newest} locale={locale} />
             </div>
           )}

@@ -23,6 +23,7 @@ export interface FacultyMeta {
   name: string;
   hue: FacultyStyle["hue"];
   art: FacultyStyle["art"];
+  scene: FacultyStyle["scene"];
 }
 
 /**
