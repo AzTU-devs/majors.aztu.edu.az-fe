@@ -1,8 +1,9 @@
-"use client";
-
 import Link from "next/link";
 import React from "react";
-import { Container, Eyebrow, cx } from "./primitives";
+
+import { TileArt } from "@/components/art/TileArt";
+import type { ArtName, Hue } from "@/lib/hues";
+import { cx } from "./primitives";
 
 export interface Crumb {
   label: string;
@@ -10,37 +11,29 @@ export interface Crumb {
 }
 
 /**
- * Breadcrumb trail. Rendered as a real <nav>/<ol> so assistive tech and
- * crawlers can read the hierarchy (the matching BreadcrumbList JSON-LD is
- * emitted server-side by each route's layout).
+ * Breadcrumb trail. A real <nav>/<ol> so assistive tech and crawlers can read
+ * the hierarchy; the matching BreadcrumbList JSON-LD is emitted by each page.
  */
-export function Breadcrumbs({ items, onBrand = false }: { items: Crumb[]; onBrand?: boolean }) {
+export function Breadcrumbs({ items, locale }: { items: Crumb[]; locale: "az" | "en" }) {
   if (!items.length) return null;
-
-  const base = onBrand ? "text-white/60" : "text-[var(--text-muted)]";
-  const link = onBrand ? "hover:text-white" : "hover:text-[var(--brand-accent)]";
-  const current = onBrand ? "text-white/90" : "text-[var(--text-body)]";
-
   return (
-    <nav aria-label="Breadcrumb" className="min-w-0">
-      <ol className={cx("flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px]", base)}>
+    <nav aria-label={locale === "az" ? "Naviqasiya yolu" : "Breadcrumb"} className="min-w-0">
+      <ol className="crumbs">
         {items.map((item, i) => {
           const last = i === items.length - 1;
           return (
-            <li key={`${item.label}-${i}`} className="flex items-center gap-2">
+            <li key={`${item.label}-${i}`} className="flex min-w-0 items-center gap-2">
               {item.href && !last ? (
-                <Link href={item.href} className={cx("transition-colors", link)}>
-                  {item.label}
-                </Link>
+                <Link href={item.href}>{item.label}</Link>
               ) : (
-                <span className={cx("font-medium", current)} aria-current={last ? "page" : undefined}>
+                <span aria-current={last ? "page" : undefined} className="min-w-0 [overflow-wrap:anywhere]">
                   {item.label}
                 </span>
               )}
               {!last && (
-                <svg aria-hidden viewBox="0 0 24 24" className="h-3 w-3 opacity-45" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                  <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <span aria-hidden className="sep">
+                  /
+                </span>
               )}
             </li>
           );
@@ -50,101 +43,77 @@ export function Breadcrumbs({ items, onBrand = false }: { items: Crumb[]; onBran
   );
 }
 
+/** Decorative tile cluster shown at the right of a detail hero. */
+export function HeroCluster({ art, className }: { art: ArtName; className?: string }) {
+  return (
+    <div aria-hidden className={cx("grid w-full max-w-[288px] grid-cols-3 gap-2.5", className)}>
+      <div className="mo col-span-2 row-span-2 !rounded-[30px] bg-k-200">
+        <TileArt name={art} className="absolute inset-0 h-full w-full" />
+      </div>
+      <div className="mo round bg-k-0">
+        <TileArt name="orbit" className="absolute inset-0 h-full w-full" />
+      </div>
+      <div className="mo gold">
+        <TileArt name="star" className="absolute inset-0 h-full w-full" />
+      </div>
+      <div className="mo arch bg-k-0">
+        <TileArt name="arch" className="absolute inset-0 h-full w-full" />
+      </div>
+      <div className="mo bg-k-200">
+        <TileArt name="dots" className="absolute inset-0 h-full w-full" />
+      </div>
+      <div className="mo leaf bg-k-0">
+        <TileArt name="blocks" className="absolute inset-0 h-full w-full" />
+      </div>
+    </div>
+  );
+}
+
 /**
- * The masthead used at the top of every interior page.
- *
- * `tone="brand"` renders the deep-navy AzTU panel (programme and subject
- * pages); `tone="light"` is the quieter variant for list pages.
+ * The detail-page hero row used at the top of every interior page: a band in
+ * the page's hue with a faint blueprint grid, breadcrumbs, kicker, the page's
+ * single <h1>, a lead and meta pills.
  */
 export default function PageHero({
-  eyebrow,
+  locale,
+  hue,
+  crumbs,
+  kicker,
   title,
-  subtitle,
-  breadcrumbs,
+  heading,
+  lead,
   meta,
-  actions,
-  tone = "light",
+  art,
+  aside,
 }: {
-  eyebrow?: string;
-  title: React.ReactNode;
-  subtitle?: string;
-  breadcrumbs?: Crumb[];
-  /** Chips shown beneath the title (code, degree, credits…). */
+  locale: "az" | "en";
+  hue: Hue;
+  crumbs?: Crumb[];
+  kicker?: React.ReactNode;
+  /** Text of the <h1>. Ignored when `heading` supplies a custom one. */
+  title?: React.ReactNode;
+  heading?: React.ReactNode;
+  lead?: React.ReactNode;
   meta?: React.ReactNode;
-  actions?: React.ReactNode;
-  tone?: "light" | "brand";
+  art?: ArtName;
+  aside?: React.ReactNode;
 }) {
-  const onBrand = tone === "brand";
-
   return (
-    <header
-      className={cx(
-        "relative overflow-hidden border-b",
-        onBrand
-          ? "border-navy-800 bg-navy-700 text-white"
-          : "border-[var(--border-subtle)] bg-[var(--surface-card)]"
-      )}
-    >
-      {onBrand ? (
-        <>
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_120%_at_85%_-10%,#2f4184_0%,transparent_60%)]"
-          />
-          <div aria-hidden className="dot-grid pointer-events-none absolute inset-0 text-white opacity-[0.06]" />
-        </>
-      ) : (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-24 -top-40 h-96 w-96 rounded-full bg-[var(--brand-tint)] blur-3xl"
-        />
-      )}
-
-      <Container className="relative py-8 md:py-12">
-        {breadcrumbs && breadcrumbs.length > 0 && (
-          <div className="mb-5">
-            <Breadcrumbs items={breadcrumbs} onBrand={onBrand} />
+    <section className={cx("c-hero-row", hue)}>
+      <div className="wrap grid gap-8 pb-10 pt-7 md:pb-12 md:pt-9 lg:grid-cols-12 lg:gap-10 lg:pb-14">
+        <div className="min-w-0 lg:col-span-8">
+          {crumbs && <Breadcrumbs items={crumbs} locale={locale} />}
+          {kicker && <p className="kicker mt-8 md:mt-10">{kicker}</p>}
+          {heading ?? <h1 className="d-lg mt-4 [overflow-wrap:anywhere]">{title}</h1>}
+          {lead && <p className="lead mt-5 max-w-2xl">{lead}</p>}
+          {meta && <div className="mt-7 flex flex-wrap items-center gap-2">{meta}</div>}
+        </div>
+        {(aside || art) && (
+          <div className="hidden items-end justify-end lg:col-span-4 lg:flex">
+            {aside ?? (art && <HeroCluster art={art} />)}
           </div>
         )}
-
-        {eyebrow &&
-          (onBrand ? (
-            <p className="inline-flex items-center gap-2 text-[11.5px] font-bold uppercase tracking-[0.18em] text-sky-brand-300">
-              <span aria-hidden className="h-px w-6 bg-current opacity-50" />
-              {eyebrow}
-            </p>
-          ) : (
-            <Eyebrow>{eyebrow}</Eyebrow>
-          ))}
-
-        <div className="mt-3 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="min-w-0">
-            <h1
-              className={cx(
-                "max-w-4xl text-[27px] font-extrabold leading-[1.15] md:text-[38px]",
-                onBrand && "text-white"
-              )}
-            >
-              {title}
-            </h1>
-
-            {subtitle && (
-              <p
-                className={cx(
-                  "mt-3.5 max-w-2xl text-[15px] leading-relaxed",
-                  onBrand ? "text-white/70" : "text-[var(--text-muted)]"
-                )}
-              >
-                {subtitle}
-              </p>
-            )}
-
-            {meta && <div className="mt-5 flex flex-wrap items-center gap-2">{meta}</div>}
-          </div>
-
-          {actions && <div className="flex shrink-0 flex-wrap gap-3">{actions}</div>}
-        </div>
-      </Container>
-    </header>
+      </div>
+    </section>
   );
 }

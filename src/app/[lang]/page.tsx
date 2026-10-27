@@ -1,70 +1,83 @@
 import type { Metadata } from "next";
 
-import Home from "@/components/home/Home";
+import Home, { type HomeProps } from "@/components/home/Home";
+import { homeFaq } from "@/components/home/faq";
 import JsonLd from "@/components/seo/JsonLd";
-import { breadcrumbSchema, graph } from "@/lib/jsonld";
-import { fetchFaculties, fetchSpecialties } from "@/lib/api";
-import {
-  SITE_DESCRIPTION,
-  SITE_NAME,
-  UNIVERSITY,
-  localeAlternates,
-  resolveLocale,
-} from "@/lib/site";
+import { fetchCurriculum, fetchSpecialties, mapLimit, orFallback } from "@/lib/api";
+import { cardContext, newestFirst, toCard } from "@/lib/catalogue";
+import { faqSchema, graph, organizationSchema, websiteSchema } from "@/lib/jsonld";
+import { ogPath } from "@/lib/routes";
+import { pageMetadata } from "@/lib/seo";
+import { localeParam } from "@/lib/params";
+import { SITE_DESCRIPTION } from "@/lib/site";
+
+/** A programme counts as "new" for this long after it was added. */
+const NEW_FOR_MS = 120 * 24 * 60 * 60 * 1000;
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
-  const locale = resolveLocale((await params).lang);
-  const az = locale === "az";
-
-  const title = az
-    ? "AzTU Təhsil Proqramları — bakalavr və magistr ixtisasları"
-    : "AzTU Academic Programmes — bachelor's and master's degrees";
-
-  return {
-    // The home page carries the full name rather than the "| AzTU" template.
-    title: { absolute: `${title} | ${az ? UNIVERSITY.nameAz : UNIVERSITY.nameEn}` },
+  const locale = localeParam((await params).lang);
+  const title =
+    locale === "az"
+      ? "AzTU Təhsil Proqramları — bakalavr və magistr ixtisasları"
+      : "AzTU Academic Programmes — bachelor's and master's degrees";
+  return pageMetadata({
+    locale,
+    path: "/",
+    title,
+    absoluteTitle: title,
     description: SITE_DESCRIPTION[locale],
-    alternates: localeAlternates("/", locale),
-    openGraph: {
-      type: "website",
-      title,
-      description: SITE_DESCRIPTION[locale],
-      siteName: SITE_NAME[locale],
-      images: [{ url: "/aztu-campus.jpg", width: 1920, height: 1280, alt: UNIVERSITY.nameAz }],
-    },
-  };
+    image: ogPath(locale, "home"),
+  });
 }
 
 export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
-  const locale = resolveLocale((await params).lang);
+  const locale = localeParam((await params).lang);
 
-  // Real counts, read server-side, so the headline figures are accurate and
-  // present in the crawled HTML rather than invented constants.
-  const [bachelors, masters, faculties] = await Promise.all([
-    fetchSpecialties(locale, 1),
-    fetchSpecialties(locale, 2),
-    fetchFaculties(locale),
-  ]);
+  // Real figures read server-side, so the counts, the newest programme and
+  // the carousel are in the crawled HTML. An outage only blanks them; the
+  // page itself still renders.
+  const [all, ctx] = await Promise.all([orFallback(fetchSpecialties(locale), null), cardContext(locale)]);
+
+  const newest = all ? newestFirst(all) : [];
+  const carouselItems = newest.slice(0, 8);
+  const subjectCounts = await mapLimit(carouselItems, 4, (s) =>
+    orFallback(
+      fetchCurriculum(s.specialty_key, locale).then((list) => list.length),
+      null
+    )
+  );
+  const now = Date.now();
+
+  const props: HomeProps = {
+    locale,
+    counts: {
+      bachelor: all ? all.filter((s) => s.degree !== 2).length : null,
+      master: all ? all.filter((s) => s.degree === 2).length : null,
+    },
+    faculties: ctx.metas.map((f) => {
+      const c = ctx.index.counts[f.code];
+      return { ...f, total: c?.total ?? null, bachelor: c?.bachelor ?? null, master: c?.master ?? null };
+    }),
+    newest: newest[0] ? toCard(newest[0], ctx.index, ctx.styles, ctx.names) : null,
+    carousel: carouselItems.map((s, i) => {
+      const created = s.created_at ? Date.parse(s.created_at) : NaN;
+      return {
+        card: toCard(s, ctx.index, ctx.styles, ctx.names),
+        isNew: Number.isFinite(created) && now - created < NEW_FOR_MS,
+        subjects: subjectCounts[i],
+      };
+    }),
+    faq: homeFaq(locale),
+  };
 
   return (
     <>
-      <JsonLd
-        data={graph(
-          breadcrumbSchema([{ name: SITE_NAME[locale], path: `/${locale}` }])
-        )}
-      />
-      <Home
-        locale={locale}
-        stats={{
-          bachelor: bachelors.length,
-          master: masters.length,
-          faculties: faculties.length,
-        }}
-      />
+      <JsonLd data={graph(organizationSchema(locale), websiteSchema(locale), faqSchema(props.faq))} />
+      <Home {...props} />
     </>
   );
 }

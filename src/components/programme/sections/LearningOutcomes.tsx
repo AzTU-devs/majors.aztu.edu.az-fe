@@ -1,54 +1,32 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
+import RefreshErrorState from "@/components/ui/RefreshErrorState";
+import { IconTarget } from "@/components/ui/icons";
+import { EmptyState, PanelHead, Pill } from "@/components/ui/primitives";
+import type { Settled } from "@/lib/api";
+import type { Marked } from "@/lib/content";
 import { tr } from "@/lib/i18n";
+import { countLabel } from "@/lib/sections";
 import type { Locale } from "@/lib/site";
-import { getPloBySpecialty, type PloInterface } from "@/services/plo/ploService";
-import { Card, EmptyState, SectionHeading, Skeleton } from "@/components/ui/primitives";
+import type { PloInterface } from "@/services/plo/ploService";
 
-export default function LearningOutcomes({
-  locale,
-  specialtyKey,
-}: {
-  locale: Locale;
-  specialtyKey: string;
-}) {
-  const [plos, setPlos] = useState<PloInterface[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    getPloBySpecialty(specialtyKey, locale)
-      .then((res) => !cancelled && setPlos(res))
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
-  }, [specialtyKey, locale]);
-
+/** On an English page, outcomes shown in their Azerbaijani fallback carry lang "az". */
+export default function LearningOutcomes({ locale, plos }: { locale: Locale; plos: Settled<Marked<PloInterface>[]> }) {
   return (
     <>
-      <SectionHeading
-        as="h2"
-        eyebrow={tr(locale, "PLO", "PLO")}
+      <PanelHead
         title={tr(locale, "Proqram təlim məqsədləri", "Programme learning outcomes")}
-        subtitle={tr(
+        lead={tr(
           locale,
           "Məzunun proqramı bitirdikdə nümayiş etdirməli olduğu bilik və bacarıqlar.",
           "What a graduate is expected to know and be able to do on completing the programme."
         )}
+        aside={plos.ok && plos.data.length > 0 ? <Pill tone="k">{`${plos.data.length} PLO`}</Pill> : undefined}
       />
 
-      {loading ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-32 rounded-2xl" />
-          ))}
-        </div>
-      ) : plos.length === 0 ? (
+      {!plos.ok ? (
+        <RefreshErrorState locale={locale} />
+      ) : plos.data.length === 0 ? (
         <EmptyState
+          icon={<IconTarget size={26} />}
           message={tr(
             locale,
             "Bu ixtisas üçün proqram təlim məqsədləri hələ əlavə edilməyib.",
@@ -56,25 +34,21 @@ export default function LearningOutcomes({
           )}
         />
       ) : (
-        <ol className="grid gap-4 md:grid-cols-2">
-          {plos.map((p, idx) => (
-            <li key={p.id ?? p.plo_code ?? idx}>
-              <Card className="relative h-full overflow-hidden p-6">
-                <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-navy-700 to-sky-brand-400" />
-                <div className="flex items-start gap-4">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--brand-tint)] text-[13px] font-extrabold text-[var(--brand-accent)]">
-                    {idx + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                      {p.plo_code}
-                    </p>
-                    <p className="mt-1.5 text-[14.5px] leading-relaxed text-[var(--text-body)]">
-                      {p.plo_content}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+        <ol className="grid gap-4 md:grid-cols-2" aria-label={countLabel(plos.data.length, locale, "outcome")}>
+          {plos.data.map((p, i) => (
+            <li key={p.id ?? p.plo_code ?? i} className="card flex gap-5 p-6">
+              <span className="num" aria-hidden>
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="min-w-0">
+                <p className="text-[12.5px] font-semibold uppercase tracking-[0.08em] text-k-700">
+                  PLO {i + 1}
+                  {p.plo_code && <span className="code ml-2 normal-case tracking-normal text-ink-3">{p.plo_code}</span>}
+                </p>
+                <p className="mt-2 text-[16px] leading-relaxed text-ink [overflow-wrap:anywhere]" lang={p.lang}>
+                  {p.plo_content}
+                </p>
+              </div>
             </li>
           ))}
         </ol>

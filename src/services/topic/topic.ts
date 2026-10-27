@@ -1,4 +1,4 @@
-import apiClient from "../../util/apiClient";
+import { apiGetAllPages, uniqueBy } from "../../util/apiClient";
 
 export interface Topic {
     topic_key: string;
@@ -12,23 +12,25 @@ export interface Topic {
     created_at?: string;
 }
 
-/** Topics of a subject. Always resolves to an array. */
+/**
+ * Every topic of a subject. [] when none; rejects on API failure.
+ *
+ * Reads all pages: a single 0–200 window silently dropped the rest.
+ */
 export const getTopics = async (
     subjectKey: string,
-    start: number,
-    end: number,
     lang_code: string,
+    signal?: AbortSignal,
 ): Promise<Topic[]> => {
     if (!subjectKey) return [];
-    try {
-        const response = await apiClient.get(
-            `/api/topic/${encodeURIComponent(subjectKey)}?start=${start}&end=${end}&lang=${lang_code}`
-        );
-        if (response.data.statusCode === 200 && Array.isArray(response.data.topics)) {
-            return response.data.topics as Topic[];
-        }
-        return [];
-    } catch {
-        return [];
-    }
+    const topics = await apiGetAllPages<Topic>(
+        (start, end) =>
+            `/api/topic/${encodeURIComponent(subjectKey)}?start=${start}&end=${end}&lang=${lang_code}`,
+        (body) => ({
+            items: Array.isArray(body.topics) ? (body.topics as Topic[]) : [],
+            total: typeof body.total === "number" ? body.total : undefined,
+        }),
+        signal,
+    );
+    return uniqueBy(topics, (t) => t.topic_key);
 };

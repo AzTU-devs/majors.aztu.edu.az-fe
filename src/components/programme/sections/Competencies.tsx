@@ -1,68 +1,40 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
+import RefreshErrorState from "@/components/ui/RefreshErrorState";
+import { IconBulb } from "@/components/ui/icons";
+import { EmptyState, PanelHead, Pill } from "@/components/ui/primitives";
+import type { Settled } from "@/lib/api";
+import type { Marked } from "@/lib/content";
 import { tr } from "@/lib/i18n";
+import { countLabel } from "@/lib/sections";
 import type { Locale } from "@/lib/site";
-import { getCompetencyBySpecialty, type Competency } from "@/services/competency/competencyService";
-import { Card, EmptyState, SectionHeading, Skeleton } from "@/components/ui/primitives";
+import type { Competency } from "@/services/competency/competencyService";
 
-const BulbIcon = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="h-5 w-5">
-    <path d="M9 18h6M10 21h4" strokeLinecap="round" />
-    <path d="M12 3a6 6 0 00-3.5 10.9c.5.4.8 1 .8 1.6V16h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0012 3z" strokeLinejoin="round" />
-  </svg>
-);
-
-/** competency_type: 1 = job/professional, 2 = specialty/general. */
-const GROUPS = [
-  { type: 1, az: "Peşə səriştələri", en: "Professional competencies" },
-  { type: 2, az: "İxtisas səriştələri", en: "Specialty competencies" },
+/** competency_type: 1 = job/professional, anything else = specialty/general. */
+export const COMPETENCY_GROUPS = [
+  { type: 1, az: "Peşə səriştələri", en: "Professional competencies", hue: "k-it" },
+  { type: 2, az: "İxtisas səriştələri", en: "Specialty competencies", hue: "k-build" },
 ] as const;
 
-export default function Competencies({
-  locale,
-  specialtyKey,
-}: {
-  locale: Locale;
-  specialtyKey: string;
-}) {
-  const [items, setItems] = useState<Competency[]>([]);
-  const [loading, setLoading] = useState(true);
+export const competencyGroup = (c: Competency) => (c.competency_type === 1 ? 1 : 2);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    getCompetencyBySpecialty(specialtyKey, locale)
-      .then((res) => !cancelled && setItems(res))
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
-  }, [specialtyKey, locale]);
-
+/** On an English page, competencies shown in their Azerbaijani fallback carry lang "az". */
+export default function Competencies({ locale, items }: { locale: Locale; items: Settled<Marked<Competency>[]> }) {
   return (
     <>
-      <SectionHeading
-        as="h2"
-        eyebrow={tr(locale, "Səriştələr", "Competencies")}
+      <PanelHead
         title={tr(locale, "Proqram səriştələri", "Programme competencies")}
-        subtitle={tr(
+        lead={tr(
           locale,
           "Məzunun əldə etdiyi peşə və ixtisas səriştələri.",
           "The professional and specialty competencies a graduate acquires."
         )}
+        aside={items.ok && items.data.length > 0 ? <Pill tone="k">{countLabel(items.data.length, locale, "competency")}</Pill> : undefined}
       />
 
-      {loading ? (
-        <div className="grid gap-3 md:grid-cols-2">
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-24 rounded-2xl" />
-          ))}
-        </div>
-      ) : items.length === 0 ? (
+      {!items.ok ? (
+        <RefreshErrorState locale={locale} />
+      ) : items.data.length === 0 ? (
         <EmptyState
-          icon={BulbIcon}
+          icon={<IconBulb size={26} />}
           message={tr(
             locale,
             "Bu ixtisas üçün səriştələr hələ əlavə edilməyib.",
@@ -70,35 +42,31 @@ export default function Competencies({
           )}
         />
       ) : (
-        <div className="space-y-10">
-          {GROUPS.map((group) => {
-            const groupItems = items.filter((c) => (c.competency_type ?? 2) === group.type);
+        <div className="flex flex-col gap-12">
+          {COMPETENCY_GROUPS.map((group) => {
+            // Anything that is not explicitly "professional" (1) goes in the
+            // specialty group, so an unexpected type can never hide a row.
+            const groupItems = items.data.filter((c) => competencyGroup(c) === group.type);
             if (groupItems.length === 0) return null;
             return (
-              <section key={group.type}>
-                <h3 className="mb-4 flex items-center gap-2.5 text-[15px] font-bold text-[var(--text-strong)]">
-                  <span className="h-4 w-1 rounded-full bg-[var(--brand-accent)]" aria-hidden />
+              <section key={group.type} className={group.hue} aria-labelledby={`competency-group-${group.type}`}>
+                <h3 id={`competency-group-${group.type}`} className="mb-5 flex items-center gap-3 text-[16px] font-semibold text-ink">
+                  <span aria-hidden className="h-[2px] w-7 rounded bg-k-500" />
                   {tr(locale, group.az, group.en)}
-                  <span className="text-[13px] font-semibold text-[var(--text-muted)]">
-                    ({groupItems.length})
-                  </span>
+                  <span className="font-normal text-ink-3">· {groupItems.length}</span>
                 </h3>
-                <ul className="grid gap-3 md:grid-cols-2">
+                <ul className="grid gap-4 md:grid-cols-2">
                   {groupItems.map((c, idx) => (
-                    <li key={c.id ?? c.competency_code ?? idx}>
-                      <Card className="flex h-full items-start gap-4 p-5">
-                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--brand-tint)] text-[var(--brand-accent)]">
-                          {BulbIcon}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-                            {c.competency_code}
-                          </p>
-                          <p className="mt-1.5 text-[14px] leading-relaxed text-[var(--text-body)]">
-                            {c.competency_content}
-                          </p>
-                        </div>
-                      </Card>
+                    <li key={c.id ?? c.competency_code ?? idx} className="card flex h-full items-start gap-4 p-6">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-k-100 text-k-700">
+                        <IconBulb />
+                      </span>
+                      <div className="min-w-0">
+                        {c.competency_code && <p className="code text-[12px] text-ink-3">{c.competency_code}</p>}
+                        <p className="mt-1 text-[15.5px] leading-relaxed text-ink [overflow-wrap:anywhere]" lang={c.lang}>
+                          {c.competency_content}
+                        </p>
+                      </div>
                     </li>
                   ))}
                 </ul>

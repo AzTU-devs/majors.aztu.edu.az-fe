@@ -1,21 +1,15 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
+import RefreshErrorState from "@/components/ui/RefreshErrorState";
+import { IconArrowRight, IconDoc } from "@/components/ui/icons";
+import { CodePill, EmptyState, PanelHead, Pill } from "@/components/ui/primitives";
+import type { Settled, SubjectSummary } from "@/lib/api";
+import type { Marked } from "@/lib/content";
 import { tr } from "@/lib/i18n";
-import type { Locale } from "@/lib/site";
 import { subjectPath } from "@/lib/routes";
-import { getCloBySubjectKey, type Clo } from "@/services/clo/clo";
-import { getCurriculaBySpecialtyKey, type Subject } from "@/services/curricula/curricula";
-import {
-  ArrowRight,
-  Card,
-  CodeChip,
-  EmptyState,
-  SectionHeading,
-  Skeleton,
-} from "@/components/ui/primitives";
+import { countLabel } from "@/lib/sections";
+import type { Locale } from "@/lib/site";
+import type { Clo } from "@/services/clo/clo";
 
 /**
  * Course learning outcomes for the whole programme, grouped by subject.
@@ -24,60 +18,30 @@ import {
 export default function CourseOutcomes({
   locale,
   specialtyKey,
+  rows,
 }: {
   locale: Locale;
   specialtyKey: string;
+  /** On an English page, records shown in their Azerbaijani fallback carry lang "az". */
+  rows: Settled<{ subject: Marked<SubjectSummary>; clos: Marked<Clo>[] }[]>;
 }) {
-  const [rows, setRows] = useState<{ subject: Subject; clos: Clo[] }[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-
-    (async () => {
-      const subjects = await getCurriculaBySpecialtyKey(specialtyKey, 0, 400, locale);
-      if (cancelled) return;
-
-      const clos = await Promise.all(
-        subjects.map((s) => getCloBySubjectKey(s.subject_key, locale))
-      );
-      if (cancelled) return;
-
-      setRows(
-        subjects
-          .map((subject, i) => ({ subject, clos: clos[i] }))
-          .filter((r) => r.clos.length > 0)
-      );
-      setLoading(false);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [specialtyKey, locale]);
-
   return (
     <>
-      <SectionHeading
-        as="h2"
-        eyebrow={tr(locale, "CLO", "CLO")}
+      <PanelHead
         title={tr(locale, "Fənn təlim nəticələri", "Course learning outcomes")}
-        subtitle={tr(
+        lead={tr(
           locale,
           "Hər fənnin sonunda tələbənin əldə etməli olduğu nəticələr.",
           "What a student is expected to achieve by the end of each subject."
         )}
+        aside={rows.ok && rows.data.length > 0 ? <Pill tone="k">{countLabel(rows.data.length, locale, "subject")}</Pill> : undefined}
       />
 
-      {loading ? (
-        <div className="space-y-4">
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-44 rounded-2xl" />
-          ))}
-        </div>
-      ) : rows.length === 0 ? (
+      {!rows.ok ? (
+        <RefreshErrorState locale={locale} />
+      ) : rows.data.length === 0 ? (
         <EmptyState
+          icon={<IconDoc size={26} />}
           message={tr(
             locale,
             "Bu ixtisasın fənləri üçün təlim nəticələri hələ əlavə edilməyib.",
@@ -85,36 +49,38 @@ export default function CourseOutcomes({
           )}
         />
       ) : (
-        <div className="space-y-5">
-          {rows.map(({ subject, clos }) => (
-            <Card key={subject.subject_key} className="overflow-hidden">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-sunken)] px-6 py-4">
+        <ul className="flex flex-col gap-5">
+          {rows.data.map(({ subject, clos }) => (
+            <li key={subject.subject_key} className="card overflow-hidden">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2/60 px-6 py-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <CodeChip>{subject.subject_code}</CodeChip>
-                  <h3 className="truncate text-[15px] font-bold">{subject.subject_name}</h3>
+                  <CodePill className="max-w-[10rem] truncate">{subject.subject_code}</CodePill>
+                  <h3 className="truncate font-display text-[17px] font-bold tracking-[-0.01em] text-ink" lang={subject.lang}>
+                    {subject.subject_name}
+                  </h3>
                 </div>
-                <Link
-                  href={subjectPath(locale, specialtyKey, subject.subject_key)}
-                  className="group inline-flex shrink-0 items-center gap-1.5 text-[12.5px] font-bold text-[var(--brand-accent)]"
-                >
-                  {tr(locale, "Fənnə bax", "Open subject")}
-                  <ArrowRight />
+                <Link href={subjectPath(locale, specialtyKey, subject.subject_key)} className="link-arrow !text-[14px]">
+                  {tr(locale, "Fənnin səhifəsi", "Subject page")}
+                  <span className="sr-only">: {subject.subject_name}</span>
+                  <IconArrowRight />
                 </Link>
               </div>
-
-              <ol className="divide-y divide-[var(--border-subtle)]">
+              <ol className="divide-y divide-line">
                 {clos.map((clo, i) => (
-                  <li key={i} className="flex gap-4 px-6 py-4">
-                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[var(--brand-tint)] text-[11.5px] font-extrabold text-[var(--brand-accent)]">
+                  <li key={clo.clo_code ?? i} className="flex gap-4 px-6 py-4">
+                    <span className="num !h-8 !min-w-8 !rounded-[10px] !text-[12px]" aria-hidden>
                       {i + 1}
                     </span>
-                    <p className="text-[14px] leading-relaxed text-[var(--text-body)]">{clo.clo_content}</p>
+                    <p className="text-[15.5px] leading-relaxed text-ink-2 [overflow-wrap:anywhere]">
+                      <span className="sr-only">CLO {i + 1}: </span>
+                      <span lang={clo.lang}>{clo.clo_content}</span>
+                    </p>
                   </li>
                 ))}
               </ol>
-            </Card>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </>
   );

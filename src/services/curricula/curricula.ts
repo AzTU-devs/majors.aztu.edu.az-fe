@@ -1,4 +1,4 @@
-import apiClient from "../../util/apiClient";
+import { apiGet, apiGetAllPages, uniqueBy } from "../../util/apiClient";
 
 export interface Subject {
     /** Immutable identity: use for URLs, React keys and cross-endpoint joins. */
@@ -38,41 +38,43 @@ export interface SubjectDetails {
     assessment?: AssessmentRow[];
 }
 
-/** All subjects of a programme. Always resolves to an array. */
+/**
+ * Every subject of a programme. [] when the programme has none; rejects with
+ * ApiError when the API fails.
+ *
+ * Reads all pages using the reported total, so no curriculum is truncated by
+ * a fixed window.
+ */
 export const getCurriculaBySpecialtyKey = async (
     specialtyKey: string,
-    start: number,
-    end: number,
     lang_code: string,
+    signal?: AbortSignal,
 ): Promise<Subject[]> => {
-    try {
-        const response = await apiClient.get(
-            `/api/curricula/${encodeURIComponent(specialtyKey)}/subjects?start=${start}&end=${end}&lang=${lang_code}`
-        );
-        if (response.data.statusCode === 200 && Array.isArray(response.data.subjects)) {
-            return response.data.subjects as Subject[];
-        }
-        return [];
-    } catch {
-        return [];
-    }
+    if (!specialtyKey) return [];
+    const subjects = await apiGetAllPages<Subject>(
+        (start, end) =>
+            `/api/curricula/${encodeURIComponent(specialtyKey)}/subjects?start=${start}&end=${end}&lang=${lang_code}`,
+        (body) => ({
+            items: Array.isArray(body.subjects) ? (body.subjects as Subject[]) : [],
+            total: typeof body.total_subjects === "number" ? body.total_subjects : undefined,
+        }),
+        signal,
+    );
+    // Keyed by subject_key in lists and joins; a subject assigned twice to the
+    // same programme would otherwise collide.
+    return uniqueBy(subjects, (s) => s.subject_key);
 };
 
-/** One subject's full record, or null when the key is unknown. */
+/** One subject's full record, or null when the key is unknown; rejects on API failure. */
 export const getSubjectDetails = async (
     subjectKey: string,
     lang_code: string,
+    signal?: AbortSignal,
 ): Promise<SubjectDetails | null> => {
     if (!subjectKey) return null;
-    try {
-        const response = await apiClient.get(
-            `/api/curricula/${encodeURIComponent(subjectKey)}?lang=${lang_code}`
-        );
-        if (response.data.statusCode === 200 && response.data.subject_details) {
-            return response.data.subject_details as SubjectDetails;
-        }
-        return null;
-    } catch {
-        return null;
-    }
+    const body = await apiGet<{ subject_details?: SubjectDetails }>(
+        `/api/curricula/${encodeURIComponent(subjectKey)}?lang=${lang_code}`,
+        signal,
+    );
+    return body?.subject_details ?? null;
 };

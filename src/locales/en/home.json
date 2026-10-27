@@ -1,6 +1,6 @@
 {
-    "header": "Azerbaijan Technical University Specialty Information System",
-    "desc": "The AzTU Information System is a system where you can get information about the specialties taught at our university, their syllabi, and the future and job opportunities of the specialties.",
-    "bachelor": "Bachelor specialties",
-    "master": "Master specialties"
+    "header": "Azerbaijan Technical University Programme Information System",
+    "desc": "The AzTU Programme Information System is where you can learn about the programmes taught at the university, their syllabi, and the future and career opportunities of their graduates.",
+    "bachelor": "Bachelor's programmes",
+    "master": "Master's programmes"
 }

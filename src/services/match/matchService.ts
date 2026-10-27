@@ -1,4 +1,4 @@
-import apiClient from "../../util/apiClient";
+import { apiGet } from "../../util/apiClient";
 
 export interface SubjectPloMatch {
     subject_key: string;
@@ -7,15 +7,13 @@ export interface SubjectPloMatch {
 
 // Returns the list of PLO codes matched to a given subject.
 export const getMatchedPlosBySubject = async (
-    subjectKey: string
+    subjectKey: string,
+    signal?: AbortSignal,
 ): Promise<SubjectPloMatch[]> => {
-    try {
-        const response = await apiClient.get(`/api/match/subject/${encodeURIComponent(subjectKey)}`);
-        if (response.data.statusCode === 200 && Array.isArray(response.data.data)) {
-            return response.data.data;
-        }
-        return [];
-    } catch {
-        return [];
-    }
+    if (!subjectKey) return [];
+    const body = await apiGet<{ data?: SubjectPloMatch[] }>(
+        `/api/match/subject/${encodeURIComponent(subjectKey)}`,
+        signal,
+    );
+    return Array.isArray(body?.data) ? body.data : [];
 };

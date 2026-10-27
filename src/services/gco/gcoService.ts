@@ -1,4 +1,4 @@
-import apiClient from "../../util/apiClient";
+import { apiGet } from "../../util/apiClient";
 
 export interface Gco {
     id: number;
@@ -12,16 +12,12 @@ export interface Gco {
 export const getGcosBySpecailty = async (
     specialtyKey: string,
     lang_code: string,
+    signal?: AbortSignal,
 ): Promise<Gco[]> => {
-    try {
-        const response = await apiClient.get(
-            `/api/gco/${encodeURIComponent(specialtyKey)}?lang=${lang_code}`
-        );
-        if (response.data.statusCode === 200 && Array.isArray(response.data.gcos)) {
-            return response.data.gcos as Gco[];
-        }
-        return [];
-    } catch {
-        return [];
-    }
+    if (!specialtyKey) return [];
+    const body = await apiGet<{ gcos?: Gco[] }>(
+        `/api/gco/${encodeURIComponent(specialtyKey)}?lang=${lang_code}`,
+        signal,
+    );
+    return Array.isArray(body?.gcos) ? body.gcos : [];
 };

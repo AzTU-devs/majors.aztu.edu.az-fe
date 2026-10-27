@@ -1,370 +1,336 @@
 "use client";
 
-import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 
+import { BrandLockup } from "@/components/brand/AztuMark";
+import { TileArt } from "@/components/art/TileArt";
+import LanguageToggler from "@/components/languageToggler/LanguageToggler";
+import ThemeToggler from "@/components/themeToggler/ThemeToggler";
+import { IconArrowRight, IconChevronDown, IconClose, IconMenu, IconSearch } from "@/components/ui/icons";
+import { cx } from "@/components/ui/primitives";
 import { t, tr } from "@/lib/i18n";
-import { SITE_TAGLINE, UNIVERSITY, type Locale } from "@/lib/site";
-import { useLocale } from "@/hooks/useLocale";
-import { useTheme } from "@/hooks/useTheme";
-import LanguageToggler from "../languageToggler/LanguageToggler";
-import ThemeToggler from "../themeToggler/ThemeToggler";
-import { cx } from "../ui/primitives";
+import type { ArtName, Hue } from "@/lib/hues";
+import { facultyPath } from "@/lib/routes";
+import { BRAND_WORDMARK, UNIVERSITY, type Locale } from "@/lib/site";
 
-import AztuDark from "@/../public/assets/aztu-logo-dark-320.png";
-import AztuLight from "@/../public/assets/aztu-logo-light-320.png";
-
-interface NavItem {
-  href: string;
-  label: string;
-  /** Present when the item opens a panel instead of navigating. */
-  children?: { href: string; label: string; description: string; icon: React.ReactNode }[];
+export interface NavFaculty {
+  code: string;
+  name: string;
+  hue: Hue;
+  art: ArtName;
 }
 
-const GradIcon = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="h-5 w-5">
-    <path d="M12 4L2 9l10 5 10-5-10-5z" strokeLinejoin="round" />
-    <path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5" strokeLinecap="round" />
-  </svg>
-);
-
-const BookIcon = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="h-5 w-5">
-    <path d="M4 5.5A2.5 2.5 0 016.5 3H20v15H6.5A2.5 2.5 0 004 20.5z" strokeLinejoin="round" />
-    <path d="M4 20.5A2.5 2.5 0 016.5 18H20v3H6.5A2.5 2.5 0 014 20.5z" strokeLinejoin="round" />
-  </svg>
-);
-
-const BuildingIcon = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="h-5 w-5">
-    <path d="M3 21h18M5 21V6l7-3 7 3v15" strokeLinejoin="round" />
-    <path d="M9 21v-5h6v5M9 10h.01M15 10h.01M9 13.5h.01M15 13.5h.01" strokeLinecap="round" />
-  </svg>
-);
-
-const MailIcon = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="h-5 w-5">
-    <rect x="3" y="5" width="18" height="14" rx="2" />
-    <path d="M3.5 6.5l8.5 6 8.5-6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-function buildNav(lang: string, locale: Locale): NavItem[] {
-  return [
-    {
-      href: `/${lang}/bachelor`,
-      label: t("header", "specialties", locale),
-      children: [
-        {
-          href: `/${lang}/bachelor`,
-          label: t("header", "bachelor", locale),
-          description: tr(locale, "4 illik bakalavr proqramları", "Four-year undergraduate programmes"),
-          icon: GradIcon,
-        },
-        {
-          href: `/${lang}/master`,
-          label: t("header", "master", locale),
-          description: tr(locale, "2 illik magistr proqramları", "Two-year graduate programmes"),
-          icon: BookIcon,
-        },
-      ],
-    },
-    { href: `/${lang}/faculties`, label: t("header", "faculties", locale) },
-    { href: `/${lang}/contact`, label: tr(locale, "Əlaqə", "Contact") },
-  ];
+function SearchForm({ locale, id, className }: { locale: Locale; id: string; className?: string }) {
+  const label = tr(locale, "İxtisas axtarın", "Search programmes");
+  return (
+    <form role="search" action={`/${locale}/programmes`} method="get" className={className}>
+      <IconSearch />
+      <label htmlFor={id} className="sr-only">
+        {label}
+      </label>
+      <input id={id} name="q" type="search" placeholder={`${label}…`} autoComplete="off" enterKeyHint="search" />
+    </form>
+  );
 }
 
-export default function Header() {
-  const { locale, lang } = useLocale();
-  const { isDark } = useTheme();
+/**
+ * Site header: sticky, transparent over the page until it scrolls, then a
+ * frosted surface. Brand block, main navigation (with a faculties panel),
+ * programme search, language and theme switches; a disclosure menu below lg.
+ */
+export default function Header({ locale, faculties }: { locale: Locale; faculties: NavFaculty[] }) {
   const pathname = usePathname() ?? "";
-
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const menuId = useId();
-
-  const nav = buildNav(lang, locale);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const panelId = useId();
+  const mobileId = useId();
+  const panelWrap = useRef<HTMLDivElement>(null);
+  const panelButton = useRef<HTMLButtonElement>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const mobilePanel = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => setScrolled(window.scrollY > 8));
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
-  // Lock body scroll while the mobile sheet is open.
+  // A navigation closes whatever is open.
+  useEffect(() => {
+    setMobileOpen(false);
+    setPanelOpen(false);
+  }, [pathname]);
+
+  // While the mobile menu is open it behaves like a modal: page scroll is
+  // locked, focus moves into the menu and stays within the header (Tab and
+  // Shift+Tab wrap around), and the rest of the page is inert — keyboard and
+  // screen-reader users cannot wander behind the menu.
   useEffect(() => {
     if (!mobileOpen) return;
+    const header = headerRef.current;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    mobilePanel.current?.querySelector<HTMLElement>("input, a, button")?.focus();
+
+    const outside = [document.getElementById("main"), document.querySelector<HTMLElement>("footer.site-footer"), document.querySelector<HTMLElement>(".skip-link")];
+    for (const el of outside) el?.setAttribute("inert", "");
+
+    const focusables = () =>
+      Array.from(
+        header?.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])') ?? []
+      ).filter((el) => el.getClientRects().length > 0);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !header) return;
+      const list = focusables();
+      if (list.length === 0) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      const active = document.activeElement;
+      const inside = active instanceof Node && header.contains(active);
+      if (e.shiftKey && (active === first || !inside)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (active === last || !inside)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    const onFocusIn = (e: FocusEvent) => {
+      if (header && e.target instanceof Node && !header.contains(e.target)) focusables()[0]?.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("focusin", onFocusIn);
     return () => {
       document.body.style.overflow = previous;
+      for (const el of outside) el?.removeAttribute("inert");
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("focusin", onFocusIn);
     };
   }, [mobileOpen]);
 
-  // Route changes must dismiss both menus.
+  // The menu exists below lg only: widening the window closes it (otherwise
+  // the page would stay inert behind a menu that is no longer shown).
   useEffect(() => {
-    setMobileOpen(false);
-    setOpenMenu(null);
-  }, [pathname]);
+    const wide = window.matchMedia("(min-width: 1024px)");
+    const onChange = () => {
+      if (wide.matches) setMobileOpen(false);
+    };
+    wide.addEventListener("change", onChange);
+    return () => wide.removeEventListener("change", onChange);
+  }, []);
 
-  // Escape closes whatever is open.
+  const open = useRef({ panel: false, mobile: false });
+  useEffect(() => {
+    open.current = { panel: panelOpen, mobile: mobileOpen };
+  }, [panelOpen, mobileOpen]);
+
+  // Escape closes (focus returns to the control that opened it); a click
+  // outside the faculties panel closes it.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      setMobileOpen(false);
-      setOpenMenu(null);
+      if (open.current.panel) {
+        setPanelOpen(false);
+        panelButton.current?.focus();
+      }
+      if (open.current.mobile) {
+        setMobileOpen(false);
+        menuButton.current?.focus();
+      }
+    };
+    const onPointer = (e: PointerEvent) => {
+      if (panelWrap.current && !panelWrap.current.contains(e.target as Node)) setPanelOpen(false);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onPointer);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", onPointer);
+    };
   }, []);
 
-  useEffect(() => () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-  }, []);
-
-  const openWithDelay = useCallback((label: string) => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    setOpenMenu(label);
-  }, []);
-
-  // A short grace period stops the panel flickering shut as the pointer
-  // travels from the trigger down into it.
-  const closeWithDelay = useCallback(() => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setOpenMenu(null), 140);
+  // Tabbing out of the faculties panel closes it.
+  const onPanelBlur = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPanelOpen(false);
   }, []);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
-  /** Programme list pages should also light up the "Programmes" trigger. */
-  const programmesActive =
-    isActive(`/${lang}/bachelor`) ||
-    isActive(`/${lang}/master`) ||
-    pathname.startsWith(`/${lang}/programmes`);
+  const nav = [
+    { href: `/${locale}/bachelor`, label: t("header", "bachelor", locale) },
+    { href: `/${locale}/master`, label: t("header", "master", locale) },
+  ];
+  const contact = { href: `/${locale}/contact`, label: tr(locale, "Əlaqə", "Contact") };
+  const facultiesHref = `/${locale}/faculties`;
+  const facultiesLabel = t("header", "faculties", locale);
 
   return (
-    <header
-      className={cx(
-        "sticky top-0 z-50 w-full border-b transition-all duration-300 no-print",
-        scrolled
-          ? "border-[var(--border-subtle)] bg-[var(--surface-card)]/85 shadow-[var(--shadow-header)] backdrop-blur-xl"
-          : "border-transparent bg-[var(--surface-card)]"
-      )}
-    >
-      {/* Thin brand rule — the sky-blue from the AzTU wordmark. */}
-      <div aria-hidden className="h-[3px] w-full bg-gradient-to-r from-navy-700 via-sky-brand-400 to-navy-700" />
-
-      <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        {/* Logo + wordmark */}
+    <header ref={headerRef} className={cx("site-header no-print", (scrolled || mobileOpen) && "is-scrolled", mobileOpen && "is-open")}>
+      <div className="wrap bar flex items-center gap-4 lg:gap-8">
         <Link
-          href={`/${lang}`}
-          className="flex shrink-0 items-center gap-3 rounded-lg transition-opacity hover:opacity-80"
+          href={`/${locale}`}
+          className="brand shrink-0"
+          aria-label={`${UNIVERSITY.shortName} ${BRAND_WORDMARK[locale]} — ${t("header", "home", locale)}`}
         >
-          <Image
-            src={isDark ? AztuLight : AztuDark}
-            alt={locale === "az" ? UNIVERSITY.nameAz : UNIVERSITY.nameEn}
-            width={160}
-            height={219}
-            className="h-10 w-auto object-contain"
-            priority
-          />
-          <span className="hidden border-l border-[var(--border-subtle)] pl-3 sm:block">
-            <span className="block text-[13.5px] font-extrabold leading-tight text-[var(--text-strong)]">
-              {UNIVERSITY.shortName}
-            </span>
-            <span className="block text-[11px] font-medium leading-tight text-[var(--text-muted)]">
-              {SITE_TAGLINE[locale]}
-            </span>
-          </span>
+          <BrandLockup locale={locale} />
         </Link>
 
-        {/* Desktop navigation */}
-        <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
-          {nav.map((item) => {
-            const active = item.children ? programmesActive : isActive(item.href);
+        <nav aria-label={tr(locale, "Əsas menyu", "Main")} className="hidden items-center gap-1 lg:flex">
+          {nav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="nav-link"
+              aria-current={isActive(item.href) ? "page" : undefined}
+            >
+              {item.label}
+            </Link>
+          ))}
 
-            if (!item.children) {
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={cx(
-                    "relative rounded-lg px-3.5 py-2 text-[14px] font-semibold transition-colors",
-                    active
-                      ? "text-[var(--brand-accent)]"
-                      : "text-[var(--text-body)] hover:bg-[var(--surface-sunken)] hover:text-[var(--text-strong)]"
-                  )}
-                >
-                  {item.label}
-                  {active && (
-                    <span
-                      aria-hidden
-                      className="absolute inset-x-3.5 -bottom-0.5 h-0.5 rounded-full bg-[var(--brand-accent)]"
-                    />
-                  )}
-                </Link>
-              );
-            }
-
-            const open = openMenu === item.label;
-            return (
-              <div
-                key={item.label}
-                className="relative"
-                onMouseEnter={() => openWithDelay(item.label)}
-                onMouseLeave={closeWithDelay}
-              >
-                <button
-                  type="button"
-                  aria-expanded={open}
-                  aria-controls={`${menuId}-${item.label}`}
-                  onClick={() => setOpenMenu(open ? null : item.label)}
-                  className={cx(
-                    "relative flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[14px] font-semibold transition-colors",
-                    active || open
-                      ? "text-[var(--brand-accent)]"
-                      : "text-[var(--text-body)] hover:bg-[var(--surface-sunken)] hover:text-[var(--text-strong)]"
-                  )}
-                >
-                  {item.label}
-                  <svg
-                    aria-hidden
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                    className={cx("h-3.5 w-3.5 opacity-60 transition-transform duration-200", open && "rotate-180")}
-                  >
-                    <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  {active && (
-                    <span
-                      aria-hidden
-                      className="absolute inset-x-3.5 -bottom-0.5 h-0.5 rounded-full bg-[var(--brand-accent)]"
-                    />
-                  )}
-                </button>
-
-                <AnimatePresence>
-                  {open && (
-                    <motion.div
-                      id={`${menuId}-${item.label}`}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 6 }}
-                      transition={{ duration: 0.16, ease: "easeOut" }}
-                      className="absolute left-0 top-full w-[340px] pt-3"
+          <div ref={panelWrap} className="relative" onBlur={onPanelBlur}>
+            <button
+              ref={panelButton}
+              type="button"
+              className={cx("nav-link", isActive(facultiesHref) && "is-active")}
+              aria-expanded={panelOpen}
+              aria-controls={panelId}
+              onClick={() => setPanelOpen((v) => !v)}
+            >
+              {facultiesLabel}
+              <IconChevronDown
+                size={16}
+                className={cx("transition-transform duration-200", panelOpen && "rotate-180")}
+              />
+            </button>
+            <div
+              id={panelId}
+              hidden={!panelOpen}
+              className="absolute left-1/2 top-full z-10 mt-3 w-[min(560px,calc(100vw-48px))] -translate-x-1/2 rounded-[26px] bg-surface p-3 elev-3 ring-line"
+            >
+              <ul className="grid gap-1 sm:grid-cols-2">
+                {faculties.map((f) => (
+                  <li key={f.code}>
+                    <Link
+                      href={facultyPath(locale, f.code)}
+                      className={cx(f.hue, "flex items-center gap-3 rounded-[16px] p-2.5 transition-colors hover:bg-k-50")}
                     >
-                      <div className="overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-card)] p-2 shadow-[var(--shadow-card-hover)]">
-                        {item.children.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            className="flex items-start gap-3.5 rounded-xl p-3 transition-colors hover:bg-[var(--surface-sunken)]"
-                          >
-                            <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--brand-tint)] text-[var(--brand-accent)]">
-                              {child.icon}
-                            </span>
-                            <span className="min-w-0">
-                              <span className="block text-[14px] font-bold text-[var(--text-strong)]">
-                                {child.label}
-                              </span>
-                              <span className="mt-0.5 block text-[12.5px] leading-snug text-[var(--text-muted)]">
-                                {child.description}
-                              </span>
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
+                      <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-[12px] bg-k-100">
+                        <TileArt name={f.art} className="absolute inset-0 h-full w-full" />
+                      </span>
+                      <span className="text-[14px] font-semibold leading-snug text-ink">{f.name}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={facultiesHref}
+                className="mt-2 flex items-center justify-between rounded-[16px] bg-paper-2 px-4 py-3 text-[14px] font-semibold text-ink transition-colors hover:bg-surface-2"
+              >
+                {tr(locale, "Bütün fakültələr və kafedralar", "All faculties and departments")}
+                <IconArrowRight size={18} />
+              </Link>
+            </div>
+          </div>
+
+          <Link href={contact.href} className="nav-link" aria-current={isActive(contact.href) ? "page" : undefined}>
+            {contact.label}
+          </Link>
         </nav>
 
-        {/* Controls */}
-        <div className="flex items-center gap-2">
-          <ThemeToggler />
-          <div className="hidden sm:block">
-            <LanguageToggler />
-          </div>
-          <button
-            type="button"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-label={mobileOpen ? tr(locale, "Menyunu bağla", "Close menu") : tr(locale, "Menyunu aç", "Open menu")}
-            aria-expanded={mobileOpen}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-strong)] text-[var(--text-body)] transition-colors hover:bg-[var(--surface-sunken)] active:scale-90 md:hidden"
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          <SearchForm locale={locale} id="site-search" className="search-trigger hidden w-[250px] xl:flex" />
+          <Link
+            href={`/${locale}/programmes`}
+            className="btn-icon hidden sm:inline-grid xl:hidden"
+            aria-label={tr(locale, "İxtisas axtarın", "Search programmes")}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-5 w-5">
-              {mobileOpen ? (
-                <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
-              ) : (
-                <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
-              )}
-            </svg>
+            <IconSearch />
+          </Link>
+          <LanguageToggler locale={locale} className="hidden sm:inline-flex" />
+          <ThemeToggler locale={locale} />
+          <Link href={`/${locale}/programmes`} className="btn btn-primary btn-sm hidden xl:inline-flex">
+            {tr(locale, "Bütün ixtisaslar", "All programmes")}
+          </Link>
+          <button
+            ref={menuButton}
+            type="button"
+            className="btn-icon line lg:hidden"
+            aria-expanded={mobileOpen}
+            aria-controls={mobileId}
+            aria-label={mobileOpen ? tr(locale, "Menyunu bağla", "Close menu") : tr(locale, "Menyunu aç", "Open menu")}
+            onClick={() => setMobileOpen((v) => !v)}
+          >
+            {mobileOpen ? <IconClose /> : <IconMenu />}
           </button>
         </div>
       </div>
 
-      {/* Mobile sheet */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-x-0 bottom-0 top-[71px] z-40 bg-navy-950/40 backdrop-blur-sm md:hidden"
-            onClick={() => setMobileOpen(false)}
-          >
-            <motion.nav
-              aria-label="Mobile"
-              initial={{ y: -14, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -14, opacity: 0 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
-              onClick={(e) => e.stopPropagation()}
-              className="max-h-full overflow-y-auto border-b border-[var(--border-subtle)] bg-[var(--surface-card)] p-3 shadow-xl"
-            >
-              {[
-                { href: `/${lang}/bachelor`, label: t("header", "bachelor", locale), icon: GradIcon },
-                { href: `/${lang}/master`, label: t("header", "master", locale), icon: BookIcon },
-                { href: `/${lang}/faculties`, label: t("header", "faculties", locale), icon: BuildingIcon },
-                { href: `/${lang}/contact`, label: tr(locale, "Əlaqə", "Contact"), icon: MailIcon },
-              ].map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive(item.href) ? "page" : undefined}
-                  className={cx(
-                    "flex items-center gap-3.5 rounded-xl px-3 py-3.5 text-[15px] font-semibold transition-colors",
-                    isActive(item.href)
-                      ? "bg-[var(--brand-tint)] text-[var(--brand-accent)]"
-                      : "text-[var(--text-body)] hover:bg-[var(--surface-sunken)]"
-                  )}
-                >
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--brand-tint)] text-[var(--brand-accent)]">
-                    {item.icon}
-                  </span>
-                  {item.label}
-                </Link>
-              ))}
+      <div
+        id={mobileId}
+        ref={mobilePanel}
+        hidden={!mobileOpen}
+        className="max-h-[calc(100dvh-var(--header-h))] overflow-y-auto border-t border-line bg-surface lg:hidden"
+      >
+        <div className="wrap flex flex-col gap-6 py-6">
+          <SearchForm locale={locale} id="mobile-search" className="field-search" />
 
-              <div className="mt-3 flex justify-center border-t border-[var(--border-subtle)] pt-4 sm:hidden">
-                <LanguageToggler />
-              </div>
-            </motion.nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          <nav aria-label={tr(locale, "Mobil menyu", "Mobile")}>
+            <ul className="flex flex-col">
+              {[
+                ...nav,
+                { href: `/${locale}/programmes`, label: tr(locale, "Bütün ixtisaslar", "All programmes") },
+                { href: facultiesHref, label: facultiesLabel },
+                contact,
+              ].map((item) => (
+                <li key={item.href} className="border-b border-line last:border-0">
+                  <Link
+                    href={item.href}
+                    aria-current={isActive(item.href) ? "page" : undefined}
+                    className="flex items-center justify-between py-4 font-display text-[19px] font-bold tracking-[-0.01em] text-ink aria-[current=page]:text-navy"
+                  >
+                    {item.label}
+                    <IconArrowRight size={18} className="text-ink-3" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {faculties.length > 0 && (
+            <div>
+              <p className="kicker">{facultiesLabel}</p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {faculties.map((f) => (
+                  <li key={f.code}>
+                    <Link href={facultyPath(locale, f.code)} className={cx(f.hue, "chip sm with-sw")}>
+                      <span className="sw">
+                        <TileArt name={f.art} />
+                      </span>
+                      <span className="max-w-[16rem] truncate">{f.name}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between rounded-[18px] bg-paper-2 px-3 py-2 sm:hidden">
+            <LanguageToggler locale={locale} />
+          </div>
+        </div>
+      </div>
     </header>
   );
 }

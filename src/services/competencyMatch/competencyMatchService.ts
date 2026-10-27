@@ -1,4 +1,4 @@
-import apiClient from "../../util/apiClient";
+import { apiGet } from "../../util/apiClient";
 
 export interface SubjectCompetencyMatch {
     subject_key: string;
@@ -7,15 +7,15 @@ export interface SubjectCompetencyMatch {
 
 // Returns the subjects matched to a given competency.
 export const getMatchedSubjectsByCompetency = async (
-    competencyCode: string
+    competencyCode: string,
+    signal?: AbortSignal,
 ): Promise<SubjectCompetencyMatch[]> => {
-    try {
-        const response = await apiClient.get(`/api/competency-match/competency/${competencyCode}`);
-        if (response.data.statusCode === 200 && Array.isArray(response.data.data)) {
-            return response.data.data;
-        }
-        return [];
-    } catch {
-        return [];
-    }
+    if (!competencyCode) return [];
+    // Encoded: a code containing "/", "#", "?" or a space otherwise hit a
+    // different (or no) route.
+    const body = await apiGet<{ data?: SubjectCompetencyMatch[] }>(
+        `/api/competency-match/competency/${encodeURIComponent(competencyCode)}`,
+        signal,
+    );
+    return Array.isArray(body?.data) ? body.data : [];
 };

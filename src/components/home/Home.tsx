@@ -1,477 +1,577 @@
-"use client";
-
-import Image from "next/image";
 import Link from "next/link";
-import { motion, type Variants } from "framer-motion";
 
-import { t, tr } from "@/lib/i18n";
-import { UNIVERSITY, type Locale } from "@/lib/site";
+import { CoverArt, TileArt } from "@/components/art/TileArt";
+import { HeroBand, HeroMosaic } from "@/components/art/Mosaic";
 import {
-  ArrowRight,
-  ButtonLink,
-  Card,
-  CardCta,
-  Container,
-  Eyebrow,
-  Section,
-  SectionHeading,
-} from "@/components/ui/primitives";
+  BachelorArt,
+  MasterArt,
+  StepCurriculumArt,
+  StepOutcomesArt,
+  StepSearchArt,
+  SyllabusSheet,
+} from "@/components/art/Scenes";
+import { ProgrammeCoverCard } from "@/components/catalogue/ProgrammeCard";
+import Carousel from "@/components/home/Carousel";
+import HeroSearch from "@/components/home/HeroSearch";
+import {
+  IconArrowUpRight,
+  IconBook,
+  IconCap,
+  IconCheckCircle,
+  IconClock,
+  IconHash,
+  IconPlus,
+  IconTarget,
+} from "@/components/ui/icons";
+import { ArrowLink, ButtonLink, Kicker, SectionHead, cx } from "@/components/ui/primitives";
+import type { FacultyMeta, ProgrammeCardData } from "@/lib/catalogue";
+import { t, tr } from "@/lib/i18n";
+import { catalogPath, facultyPath, programmePath } from "@/lib/routes";
+import { countLabel, degreeLabel } from "@/lib/sections";
+import type { Locale } from "@/lib/site";
 
-import Campus from "@/../public/aztu-campus.jpg";
+export interface HomeFaculty extends FacultyMeta {
+  total: number | null;
+  bachelor: number | null;
+  master: number | null;
+}
 
-const rise: Variants = {
-  hidden: { opacity: 0, y: 18 },
-  visible: (i: number = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.06, duration: 0.5, ease: "easeOut" },
-  }),
-};
-
-/* ── Icons ──────────────────────────────────────────────────── */
-
-const icon = (path: React.ReactNode) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} className="h-6 w-6">
-    {path}
-  </svg>
-);
-
-const Icons = {
-  cap: icon(
-    <>
-      <path d="M12 4L2 9l10 5 10-5-10-5z" strokeLinejoin="round" />
-      <path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5" strokeLinecap="round" />
-    </>
-  ),
-  book: icon(
-    <>
-      <path d="M4 5.5A2.5 2.5 0 016.5 3H20v15H6.5A2.5 2.5 0 004 20.5z" strokeLinejoin="round" />
-      <path d="M4 20.5A2.5 2.5 0 016.5 18H20v3H6.5A2.5 2.5 0 014 20.5z" strokeLinejoin="round" />
-    </>
-  ),
-  building: icon(
-    <>
-      <path d="M3 21h18M5 21V6l7-3 7 3v15" strokeLinejoin="round" />
-      <path d="M9 21v-5h6v5M9 10h.01M15 10h.01M9 13.5h.01M15 13.5h.01" strokeLinecap="round" />
-    </>
-  ),
-  doc: icon(
-    <>
-      <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z" strokeLinejoin="round" />
-      <path d="M14 3v5h5M9 13h6M9 17h4" strokeLinecap="round" />
-    </>
-  ),
-  target: icon(
-    <>
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="12" cy="12" r="3.5" />
-      <path d="M12 4V2M12 22v-2M20 12h2M2 12h2" strokeLinecap="round" />
-    </>
-  ),
-  briefcase: icon(
-    <>
-      <rect x="3" y="7.5" width="18" height="12.5" rx="2" />
-      <path d="M9 7.5V6a2 2 0 012-2h2a2 2 0 012 2v1.5M3 12.5h18" strokeLinecap="round" />
-    </>
-  ),
-  compass: icon(
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M15.5 8.5l-2 5-5 2 2-5 5-2z" strokeLinejoin="round" />
-    </>
-  ),
-  library: icon(
-    <>
-      <path d="M4 5h5a2 2 0 012 2v13a2 2 0 00-2-2H4zM20 5h-5a2 2 0 00-2 2v13a2 2 0 012-2h5z" strokeLinejoin="round" />
-    </>
-  ),
-  network: icon(
-    <>
-      <circle cx="12" cy="5" r="2.4" />
-      <circle cx="5.5" cy="18" r="2.4" />
-      <circle cx="18.5" cy="18" r="2.4" />
-      <path d="M12 7.4v4.2M10.4 13l-3.3 3M13.6 13l3.3 3" strokeLinecap="round" />
-    </>
-  ),
-};
-
-/* ── Page ───────────────────────────────────────────────────── */
-
-export default function Home({
-  locale,
-  stats,
-}: {
+export interface HomeProps {
   locale: Locale;
-  stats: { bachelor: number; master: number; faculties: number };
-}) {
-  const lang = locale;
-  const az = locale === "az";
+  counts: { bachelor: number | null; master: number | null };
+  faculties: HomeFaculty[];
+  newest: ProgrammeCardData | null;
+  carousel: { card: ProgrammeCardData; isNew: boolean; subjects: number | null }[];
+  faq: { q: string; a: string }[];
+}
 
-  // Round down to a "N+" figure so a single catalogue edit doesn't make the
-  // headline read as a precise-but-stale number.
-  const approx = (n: number) => (n >= 20 ? `${Math.floor(n / 10) * 10}+` : `${n}`);
+/* ── Hero ──────────────────────────────────────────────────── */
 
-  const heroStats = [
-    {
-      value: stats.bachelor ? approx(stats.bachelor) : "—",
-      label: tr(locale, "Bakalavr ixtisası", "Bachelor programmes"),
-    },
-    {
-      value: stats.master ? approx(stats.master) : "—",
-      label: tr(locale, "Magistr ixtisası", "Master programmes"),
-    },
-    {
-      value: stats.faculties ? String(stats.faculties) : "—",
-      label: tr(locale, "Fakültə", "Faculties"),
-    },
-    { value: "1920", label: tr(locale, "Təsis ili", "Founded") },
-  ];
-
-  const programmes = [
-    {
-      href: `/${lang}/bachelor`,
-      icon: Icons.cap,
-      title: t("header", "bachelor", locale),
-      desc: tr(
-        locale,
-        "Dörd illik bakalavr proqramları — tədris planı, fənlər və təlim nəticələri ilə birlikdə.",
-        "Four-year undergraduate programmes, with the full curriculum, subjects and learning outcomes."
-      ),
-      cta: tr(locale, "İxtisaslara bax", "Browse programmes"),
-      count: stats.bachelor,
-    },
-    {
-      href: `/${lang}/master`,
-      icon: Icons.book,
-      title: t("header", "master", locale),
-      desc: tr(
-        locale,
-        "İki illik magistr və elmi-tədqiqat proqramları, ixtisaslaşma istiqamətləri ilə.",
-        "Two-year graduate and research programmes with their specialisation tracks."
-      ),
-      cta: tr(locale, "İxtisaslara bax", "Browse programmes"),
-      count: stats.master,
-    },
-    {
-      href: `/${lang}/faculties`,
-      icon: Icons.building,
-      title: t("header", "faculties", locale),
-      desc: tr(
-        locale,
-        "Universitetin fakültələri, kafedraları və onların ixtisas portfeli.",
-        "The university's faculties, departments and the programmes each one runs."
-      ),
-      cta: tr(locale, "Strukturu araşdır", "Explore the structure"),
-      count: stats.faculties,
-    },
-  ];
-
-  const features = [
-    {
-      icon: Icons.doc,
-      title: tr(locale, "Sillabuslar", "Syllabi"),
-      desc: tr(
-        locale,
-        "Hər fənn üçün tam sillabus: kredit, semestr, mövzular və qiymətləndirmə.",
-        "A complete syllabus per subject: credits, semester, topics and assessment."
-      ),
-    },
-    {
-      icon: Icons.target,
-      title: tr(locale, "Təlim nəticələri", "Learning outcomes"),
-      desc: tr(
-        locale,
-        "Proqram, fənn və mövzu səviyyəsində təlim nəticələri və onların uyğunluğu.",
-        "Programme-, course- and topic-level outcomes, and how they map to each other."
-      ),
-    },
-    {
-      icon: Icons.briefcase,
-      title: tr(locale, "Karyera imkanları", "Career paths"),
-      desc: tr(
-        locale,
-        "Məzunların çalışdığı sahələr və hər ixtisasın açdığı peşə istiqamətləri.",
-        "Where graduates work, and the roles each programme opens up."
-      ),
-    },
-    {
-      icon: Icons.compass,
-      title: tr(locale, "Səriştələr", "Competencies"),
-      desc: tr(
-        locale,
-        "Peşə və ixtisas səriştələri, fənlərlə uyğunluq cədvəli ilə birlikdə.",
-        "Professional and specialty competencies, with the subject matching table."
-      ),
-    },
-    {
-      icon: Icons.library,
-      title: tr(locale, "Ədəbiyyat", "Reading lists"),
-      desc: tr(
-        locale,
-        "Hər fənn üzrə tövsiyə olunan dərslik və mənbələr.",
-        "Recommended textbooks and sources for every subject."
-      ),
-    },
-    {
-      icon: Icons.network,
-      title: tr(locale, "Uyğunluq matrisləri", "Matching matrices"),
-      desc: tr(
-        locale,
-        "CLO↔PLO və fənn↔səriştə matrisləri akkreditasiya sənədləri üçün hazır formatda.",
-        "CLO↔PLO and subject↔competency matrices, ready for accreditation files."
-      ),
-    },
-  ];
-
+function NewestCard({ p, locale }: { p: ProgrammeCardData; locale: Locale }) {
   return (
-    <>
-      {/* ─────────────── HERO ─────────────── */}
-      <section className="relative overflow-hidden border-b border-[var(--border-subtle)] bg-[var(--surface-card)]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-40 -top-52 h-[560px] w-[560px] rounded-full bg-[var(--brand-tint)] blur-3xl"
-        />
-        <div
-          aria-hidden
-          className="blueprint-grid pointer-events-none absolute inset-0 text-[var(--brand)] opacity-[0.035]"
-        />
+    <Link href={programmePath(locale, p.key)} className={cx(p.hue, "float-card group flex items-center gap-4 pr-5")}>
+      <div className="cover w-[118px] shrink-0 !rounded-[18px] sm:w-[128px]" style={{ aspectRatio: "16 / 11" }}>
+        <CoverArt name={p.art} />
+      </div>
+      <div className="min-w-0 py-1">
+        <span className="pill pill-gold !h-6 !text-[11.5px]">{tr(locale, "Ən yeni proqram", "Newest programme")}</span>
+        <p className="clamp-2 mt-2 font-display text-[16.5px] font-bold leading-snug tracking-[-0.012em] text-ink">
+          {p.name}
+        </p>
+        <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-ink-3">
+          <span className="inline-flex items-center gap-1.5">
+            <IconCap size={15} />
+            {degreeLabel(p.degree, locale)}
+          </span>
+          {p.code && <span className="code">{p.code}</span>}
+        </p>
+      </div>
+    </Link>
+  );
+}
 
-        <Container className="relative grid items-center gap-14 py-16 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:py-24">
-          {/* Copy */}
-          <div>
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-              <Eyebrow>{tr(locale, "AzTU İxtisas İnformasiya Sistemi", "AzTU Programme Information System")}</Eyebrow>
-            </motion.div>
+function Hero({ locale, faculties, newest }: Pick<HomeProps, "locale" | "faculties" | "newest">) {
+  const az = locale === "az";
+  return (
+    <section className="relative isolate overflow-hidden" aria-labelledby="hero-title">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_55%_at_0%_100%,var(--navy-tint),transparent_70%),radial-gradient(45%_45%_at_100%_0%,var(--gold-tint),transparent_70%)] opacity-80"
+      />
+      <div className="pt-6 lg:hidden">
+        <HeroBand />
+      </div>
+      <div className="wrap grid gap-12 pb-16 pt-10 md:pb-20 lg:grid-cols-12 lg:gap-10 lg:pb-28 lg:pt-14">
+        <div className="relative z-10 min-w-0 lg:col-span-6">
+          <Kicker>{az ? "Azərbaycan Texniki Universiteti" : "Azerbaijan Technical University"}</Kicker>
+          <h1 id="hero-title" className="d-xl mt-5 lg:mt-7">
+            {az ? (
+              <>
+                Gələcəyini AzTU-da{" "}
+                <span className="mark">
+                  qur
+                  <svg viewBox="0 0 200 24" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M5 16 C 60 5, 140 5, 195 13" />
+                  </svg>
+                </span>
+                .
+              </>
+            ) : (
+              <>
+                Build your future at{" "}
+                <span className="mark">
+                  AzTU
+                  <svg viewBox="0 0 200 24" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M5 16 C 60 5, 140 5, 195 13" />
+                  </svg>
+                </span>
+                .
+              </>
+            )}
+          </h1>
+          <p className="lead mt-6 max-w-[34rem] lg:mt-7">
+            {tr(
+              locale,
+              "Universitetin bütün bakalavr və magistr ixtisaslarını araşdırın: tədris planı, fənlərin sillabusları, təlim nəticələri və məzunların karyera imkanları — hamısı bir yerdə.",
+              "Explore every bachelor's and master's programme at the university: the curriculum, subject syllabi, learning outcomes and graduate careers — all in one place."
+            )}
+          </p>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.05 }}
-              className="mt-5 text-[34px] font-extrabold leading-[1.08] sm:text-[44px] lg:text-[54px]"
-            >
-              {tr(locale, "Gələcək ixtisasını", "Find the programme")}{" "}
-              <span className="text-gradient-brand">{tr(locale, "burada tap", "that fits you")}</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.12 }}
-              className="mt-5 max-w-xl text-[16px] leading-relaxed text-[var(--text-muted)] sm:text-[17px]"
-            >
-              {t("home", "desc", locale)}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.2 }}
-              className="mt-9 flex flex-wrap gap-3"
-            >
-              <ButtonLink href={`/${lang}/bachelor`}>
-                {tr(locale, "İxtisasları araşdır", "Explore programmes")}
-                <ArrowRight />
-              </ButtonLink>
-              <ButtonLink href={`/${lang}/faculties`} tone="secondary">
-                {t("header", "faculties", locale)}
-              </ButtonLink>
-            </motion.div>
-
-            {/* Headline figures */}
-            <motion.dl
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.32 }}
-              className="mt-11 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-[var(--border-subtle)] pt-7 sm:grid-cols-4"
-            >
-              {heroStats.map((s) => (
-                <div key={s.label}>
-                  <dt className="sr-only">{s.label}</dt>
-                  <dd>
-                    <span className="block text-[27px] font-extrabold leading-none text-[var(--brand-accent)]">
-                      {s.value}
-                    </span>
-                    <span className="mt-1.5 block text-[11.5px] font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">
-                      {s.label}
-                    </span>
-                  </dd>
-                </div>
-              ))}
-            </motion.dl>
+          <div className="mt-9 max-w-[36rem] lg:mt-11">
+            <HeroSearch locale={locale} />
           </div>
 
-          {/* Campus panel */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.65, delay: 0.15, ease: "easeOut" }}
-            className="relative"
-          >
-            <div className="relative overflow-hidden rounded-3xl border border-[var(--border-subtle)] shadow-[var(--shadow-card-hover)]">
-              <Image
-                src={Campus}
-                alt={
-                  az
-                    ? "Azərbaycan Texniki Universitetinin əsas binası"
-                    : "The main building of Azerbaijan Technical University"
-                }
-                className="h-[320px] w-full object-cover sm:h-[440px]"
-                sizes="(max-width: 1024px) 100vw, 45vw"
-                placeholder="blur"
-                priority
-              />
-              <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-navy-900/85 via-navy-900/15 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-6">
-                <p className="text-[12.5px] font-medium text-white/70">
-                  {az ? UNIVERSITY.nameAz : UNIVERSITY.nameEn}
-                </p>
-                <p className="mt-0.5 text-[17px] font-bold text-white">
-                  {az ? "H.Cavid prospekti 25, Bakı" : "25 H.Javid Avenue, Baku"}
-                </p>
-              </div>
-            </div>
-
-            {/* Floating figure */}
-            <div className="absolute -left-5 -top-5 hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-card)] px-5 py-4 shadow-[var(--shadow-card-hover)] sm:block">
-              <p className="text-[24px] font-extrabold leading-none text-[var(--brand-accent)]">
-                {stats.bachelor + stats.master || "—"}
-              </p>
-              <p className="mt-1 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)]">
-                {tr(locale, "təhsil proqramı", "programmes")}
-              </p>
-            </div>
-          </motion.div>
-        </Container>
-      </section>
-
-      {/* ─────────────── PROGRAMMES ─────────────── */}
-      <Section>
-        <Container>
-          <SectionHeading
-            eyebrow={tr(locale, "Proqramlar", "Programmes")}
-            title={tr(locale, "Təhsil səviyyəsini seçin", "Choose your level of study")}
-            subtitle={tr(
-              locale,
-              "Bakalavr və magistr pilləsi üzrə bütün ixtisaslar, fakültə strukturu ilə birlikdə.",
-              "Every programme across the bachelor's and master's levels, alongside the faculty structure."
-            )}
-          />
-
-          <div className="grid gap-5 md:grid-cols-3">
-            {programmes.map((p, i) => (
-              <motion.div
-                key={p.href}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-60px" }}
-                variants={rise}
+          {faculties.length > 0 && (
+            <div className="mt-7 flex items-start gap-3">
+              <span className="mt-3 hidden shrink-0 text-[14px] text-ink-3 sm:block">{t("header", "faculties", locale)}:</span>
+              <ul
+                className="no-scrollbar -mx-5 flex min-w-0 gap-2.5 overflow-x-auto px-5 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+                aria-label={t("header", "faculties", locale)}
               >
-                <Link href={p.href} className="block h-full">
-                  <Card interactive className="flex h-full flex-col p-7">
-                    <div className="flex items-start justify-between">
-                      <span className="grid h-12 w-12 place-items-center rounded-xl bg-[var(--brand-tint)] text-[var(--brand-accent)]">
-                        {p.icon}
+                {faculties.map((f) => (
+                  <li key={f.code} className="shrink-0">
+                    <Link href={facultyPath(locale, f.code)} className={cx(f.hue, "chip")}>
+                      <span className="sw">
+                        <TileArt name={f.art} />
                       </span>
-                      {p.count > 0 && (
-                        <span className="text-[13px] font-bold text-[var(--text-muted)]">{p.count}</span>
+                      <span className="max-w-[17rem] truncate">{f.name}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div className="relative min-w-0 lg:col-span-6">
+          <div className="hidden lg:block">
+            <HeroMosaic />
+          </div>
+          {newest && (
+            <div className="relative z-10 lg:absolute lg:-bottom-11 lg:-right-4 lg:w-[400px]">
+              <NewestCard p={newest} locale={locale} />
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Faculty bento ─────────────────────────────────────────── */
+
+/** lg column/row spans for tile `i` of `n` (one 2-row feature tile, then rows). */
+function bentoSpan(i: number, n: number): string {
+  if (n === 1) return "lg:col-span-12";
+  if (n === 2) return "lg:col-span-6 lg:row-span-2";
+  if (i === 0) return "lg:col-span-6 lg:row-span-2";
+  if (n === 3) return "lg:col-span-6";
+  if (n === 4) return i === 3 ? "lg:col-span-6" : "lg:col-span-3";
+  if (i <= 4) return "lg:col-span-3";
+  const rest = n - 5;
+  const posInRest = i - 5;
+  const lastRowSize = rest % 3 || 3;
+  const inLastRow = posInRest >= rest - lastRowSize;
+  if (!inLastRow) return "lg:col-span-4";
+  return lastRowSize === 1 ? "lg:col-span-12" : lastRowSize === 2 ? "lg:col-span-6" : "lg:col-span-4";
+}
+
+function FacultyBento({ locale, faculties }: { locale: Locale; faculties: HomeFaculty[] }) {
+  // The faculty with the most programmes gets the feature tile.
+  const order = [...faculties].sort((a, b) => (b.total ?? -1) - (a.total ?? -1));
+  const n = order.length;
+  return (
+    <section className="section" aria-labelledby="faculties-title">
+      <div className="wrap">
+        <SectionHead
+          id="faculties-title"
+          title={tr(locale, "Maraqlandığınız fakültədən başlayın", "Start with the faculty that interests you")}
+          lead={tr(
+            locale,
+            "Mühəndislikdən iqtisadiyyata qədər. Fakültəni seçin — kafedraları və bütün ixtisasları bir səhifədə açılsın.",
+            "From engineering to economics. Pick a faculty and see its departments and every programme on one page."
+          )}
+        />
+        <ul className="mt-12 grid auto-rows-[minmax(190px,auto)] grid-cols-1 gap-4 sm:grid-cols-2 md:mt-16 lg:auto-rows-[232px] lg:grid-cols-12">
+          {order.map((f, i) => {
+            const feature = i === 0 && n > 2;
+            return (
+              <li key={f.code} className={cx(feature && "sm:col-span-2", bentoSpan(i, n), "flex")}>
+                <Link href={facultyPath(locale, f.code)} className={cx(f.hue, "cat-tile w-full")}>
+                  {feature && <span className="paper" aria-hidden />}
+                  <div className="flex items-start justify-between gap-4">
+                    <h3
+                      className={cx(
+                        "name max-w-[22ch]",
+                        feature ? "text-[clamp(1.75rem,1.2rem+1.6vw,2.6rem)]" : "text-[19px]"
                       )}
-                    </div>
-                    <h3 className="mt-6 text-[20px] font-bold">{p.title}</h3>
-                    <p className="mt-2.5 flex-1 text-[14px] leading-relaxed text-[var(--text-muted)]">{p.desc}</p>
-                    <CardCta>{p.cta}</CardCta>
-                  </Card>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </Container>
-      </Section>
-
-      {/* ─────────────── WHAT'S INSIDE ─────────────── */}
-      <Section tone="sunken" className="border-y border-[var(--border-subtle)]">
-        <Container>
-          <SectionHeading
-            eyebrow={tr(locale, "Sistem haqqında", "What's inside")}
-            title={tr(
-              locale,
-              "Bir ixtisas haqqında bilməli olduğunuz hər şey",
-              "Everything you need to know about a programme"
-            )}
-            subtitle={tr(
-              locale,
-              "Tədris planından məzun karyerasına qədər — hamısı eyni yerdə, iki dildə.",
-              "From the curriculum to graduate careers — all in one place, in two languages."
-            )}
-          />
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f, i) => (
-              <motion.div
-                key={f.title}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-40px" }}
-                variants={rise}
-              >
-                <Card className="h-full p-6">
-                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-[var(--brand-tint)] text-[var(--brand-accent)]">
-                    {f.icon}
+                    >
+                      {f.name}
+                    </h3>
+                    <span className="go" aria-hidden>
+                      <IconArrowUpRight />
+                    </span>
+                  </div>
+                  {feature && f.total !== null && (
+                    <p className="mt-3 max-w-[30ch] text-[15px] leading-relaxed text-k-900/80">
+                      {tr(
+                        locale,
+                        `${f.bachelor ?? 0} bakalavr və ${f.master ?? 0} magistr ixtisası.`,
+                        `${f.bachelor ?? 0} bachelor's and ${f.master ?? 0} master's programmes.`
+                      )}
+                    </p>
+                  )}
+                  <div className="mt-auto pt-6">
+                    {f.total !== null && <span className="count">{countLabel(f.total, locale, "programme")}</span>}
+                  </div>
+                  <span
+                    aria-hidden
+                    className={cx(
+                      "art-box",
+                      feature ? "-bottom-6 -right-4 h-[78%] w-[52%]" : "-bottom-5 -right-5 h-[64%] w-[46%] sm:h-[70%]"
+                    )}
+                  >
+                    <TileArt name={f.art} preserve="xMaxYMax meet" />
                   </span>
-                  <h3 className="mt-5 text-[15.5px] font-bold">{f.title}</h3>
-                  <p className="mt-2 text-[13.5px] leading-relaxed text-[var(--text-muted)]">{f.desc}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </Container>
-      </Section>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}
 
-      {/* ─────────────── CTA ─────────────── */}
-      <Section>
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="relative overflow-hidden rounded-3xl bg-navy-700 px-6 py-14 text-center md:px-14 md:py-20"
-          >
+/* ── Programmes carousel ───────────────────────────────────── */
+
+function ProgrammesSection({ locale, items }: { locale: Locale; items: HomeProps["carousel"] }) {
+  if (!items.length) return null;
+  return (
+    <section className="section pt-0" aria-labelledby="newest-title">
+      <div className="wrap">
+        <Carousel
+          locale={locale}
+          id="newest-programmes"
+          label={tr(locale, "Yeni əlavə olunan ixtisaslar", "Recently added programmes")}
+          heading={
+            <h2 id="newest-title" className="d-lg max-w-[13ch]">
+              {tr(locale, "Kataloqa yeni əlavə olunanlar", "Recently added programmes")}
+            </h2>
+          }
+          extra={<ArrowLink href={catalogPath(locale)}>{tr(locale, "Bütün ixtisaslar", "All programmes")}</ArrowLink>}
+        >
+          {items.map(({ card, isNew, subjects }) => (
+            <li key={card.key} className="w-[82%] shrink-0 snap-start sm:w-[300px] lg:w-[302px]">
+              <ProgrammeCoverCard p={card} locale={locale} isNew={isNew} subjects={subjects} />
+            </li>
+          ))}
+        </Carousel>
+      </div>
+    </section>
+  );
+}
+
+/* ── Degree levels ─────────────────────────────────────────── */
+
+function DegreeCards({ locale, counts }: { locale: Locale; counts: HomeProps["counts"] }) {
+  const cards = [
+    {
+      degree: 1 as const,
+      hue: "k-navy",
+      big: tr(locale, "Bakalavr", "Bachelor's"),
+      text: tr(
+        locale,
+        "Ali təhsilin birinci pilləsi: ixtisas üzrə fundamental və peşə hazırlığı. Hər proqramın tam tədris planı və fənləri açıqdır.",
+        "The first cycle of higher education: the core and professional grounding of a field. Every programme's full curriculum is open."
+      ),
+      points: [
+        tr(locale, "Tam tədris planı, kredit və semestrlər", "Full curriculum with credits and semesters"),
+        tr(locale, "Hər fənnin sillabusu və mövzu planı", "A syllabus and topic plan for every subject"),
+        tr(locale, "Proqram təlim məqsədləri və karyera", "Programme outcomes and careers"),
+      ],
+      count: counts.bachelor,
+      cta: tr(locale, "Bakalavr ixtisaslarına baxın", "Browse bachelor's programmes"),
+      tone: "primary" as const,
+      Art: BachelorArt,
+    },
+    {
+      degree: 2 as const,
+      hue: "k-gold",
+      big: tr(locale, "Magistr", "Master's"),
+      text: tr(
+        locale,
+        "İkinci pillə: bakalavr məzunları üçün dərin ixtisaslaşma və tədqiqat hazırlığı, ixtisaslaşma istiqamətləri ilə.",
+        "The second cycle: deeper specialisation and research training for graduates, with the specialisation tracks."
+      ),
+      points: [
+        tr(locale, "İxtisaslaşma üzrə fənlər", "Subjects of each specialisation"),
+        tr(locale, "Səriştələr və uyğunluq matrisləri", "Competencies and matching matrices"),
+        tr(locale, "Fənn təlim nəticələri (CLO)", "Course learning outcomes (CLO)"),
+      ],
+      count: counts.master,
+      cta: tr(locale, "Magistr ixtisaslarına baxın", "Browse master's programmes"),
+      tone: "ghost" as const,
+      Art: MasterArt,
+    },
+  ];
+  return (
+    <section className="section pt-0" aria-labelledby="degrees-title">
+      <div className="wrap">
+        <h2 id="degrees-title" className="sr-only">
+          {tr(locale, "Təhsil pillələri", "Degree levels")}
+        </h2>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {cards.map(({ degree, hue, big, text, points, count, cta, tone, Art }) => (
+            <article key={degree} className={cx(hue, "fmt flex flex-col p-7 pt-0 sm:p-10 sm:pt-0 lg:p-12 lg:pt-0")}>
+              <Art className="-mx-4 mb-2 h-auto w-[calc(100%+2rem)] max-w-[460px] self-end sm:-mr-6" />
+              <h3 className="big">{big}</h3>
+              <p className="mt-6 max-w-[34rem] text-[17px] leading-relaxed text-k-900">{text}</p>
+              <ul className="mt-7 flex flex-col gap-3.5 text-[15.5px] text-k-900">
+                {points.map((p) => (
+                  <li key={p}>
+                    <IconCheckCircle />
+                    {p}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-3">
+                <ButtonLink href={catalogPath(locale, degree)} tone={tone} size="lg" arrow>
+                  {cta}
+                </ButtonLink>
+                {count !== null && <span className="text-[15px] text-k-700">{countLabel(count, locale, "programme")}</span>}
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Steps ─────────────────────────────────────────────────── */
+
+function Steps({ locale, example }: { locale: Locale; example: string }) {
+  const steps = [
+    {
+      title: tr(locale, "İxtisası seçin", "Choose a programme"),
+      text: tr(
+        locale,
+        "Kataloqda adı və ya kodu ilə axtarın, təhsil pilləsinə və fakültəyə görə süzün.",
+        "Search the catalogue by name or code and filter by degree level and faculty."
+      ),
+      art: <StepSearchArt term={example} locale={locale} />,
+    },
+    {
+      title: tr(locale, "Kurikulumu araşdırın", "Explore the curriculum"),
+      text: tr(
+        locale,
+        "Tədris planındakı hər fənnin kreditini, semestrini, sillabusunu və mövzularını görün.",
+        "See the credits, semester, syllabus and topics of every subject in the curriculum."
+      ),
+      art: <StepCurriculumArt />,
+    },
+    {
+      title: tr(locale, "Nəticələri görün", "See the outcomes"),
+      text: tr(
+        locale,
+        "Proqramın təlim nəticələri, səriştələri və məzunların karyera imkanları ilə tanış olun.",
+        "Review the programme's learning outcomes, competencies and graduate career paths."
+      ),
+      art: <StepOutcomesArt />,
+    },
+  ];
+  return (
+    <section className="section bg-paper-2" aria-labelledby="steps-title">
+      <div className="wrap">
+        <SectionHead
+          id="steps-title"
+          title={tr(locale, "Proqramı üç addımda tanıyın", "Get to know a programme in three steps")}
+          lead={tr(
+            locale,
+            "Qeydiyyat tələb olunmur: bütün ixtisasların məlumatı açıqdır və iki dildə təqdim olunur.",
+            "No sign-up needed: every programme's information is open and available in two languages."
+          )}
+        />
+        <div aria-hidden className="relative mt-14 hidden h-3 md:block">
+          <div className="absolute inset-x-0 top-1/2 h-px bg-line-2" />
+          {[0, 1 / 3, 2 / 3, 1].map((x) => (
+            <span key={x} className="absolute top-0 h-3 w-px bg-line-2" style={{ left: `${x * 100}%` }} />
+          ))}
+        </div>
+        <ol className="mt-8 grid gap-10 md:mt-6 md:grid-cols-3 md:gap-8">
+          {steps.map((s, i) => (
+            <li key={s.title} className="flex flex-col gap-7">
+              <div className="h-[190px] overflow-hidden rounded-[28px] bg-surface elev-1 ring-line">{s.art}</div>
+              <div className="flex gap-5">
+                <span className="step-n shrink-0" aria-hidden>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h3 className="t-lg">{s.title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-ink-2">{s.text}</p>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+/* ── Syllabus showcase ─────────────────────────────────────── */
+
+function Showcase({ locale }: { locale: Locale }) {
+  const features = [
+    { icon: <IconClock />, hue: "k-biz", text: tr(locale, "Kredit, semestr və iş yükü", "Credits, semester and workload") },
+    { icon: <IconBook />, hue: "k-it", text: tr(locale, "Mövzu planı və mövzu nəticələri", "Topic plan and topic outcomes") },
+    { icon: <IconTarget />, hue: "k-build", text: tr(locale, "Fənn təlim nəticələri (CLO)", "Course learning outcomes (CLO)") },
+    { icon: <IconHash />, hue: "k-res", text: tr(locale, "Ədəbiyyat və qiymətləndirmə", "Reading list and assessment") },
+  ];
+  return (
+    <section className="section" aria-labelledby="showcase-title">
+      <div className="wrap grid items-center gap-14 lg:grid-cols-12 lg:gap-12">
+        <div className="lg:col-span-5">
+          <h2 id="showcase-title" className="d-lg max-w-[14ch]">
+            {tr(locale, "Hər fənnin sillabusu bir yerdə", "Every subject's syllabus in one place")}
+          </h2>
+          <p className="lead mt-6 max-w-[32rem]">
+            {tr(
+              locale,
+              "Sillabus səhifəsi fənn haqqında rəsmi məlumatı toplayır və çap üçün hazırdır.",
+              "The syllabus page gathers a subject's official information and is ready to print."
+            )}
+          </p>
+          <ul className="mt-9 flex flex-col gap-4">
+            {features.map((f) => (
+              <li key={f.text} className="flex items-center gap-4 text-[16px] text-ink">
+                <span className={cx(f.hue, "grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-k-100 text-k-700")}>
+                  {f.icon}
+                </span>
+                {f.text}
+              </li>
+            ))}
+          </ul>
+          <ArrowLink href={catalogPath(locale)} className="mt-10">
+            {tr(locale, "İxtisası seçin", "Choose a programme")}
+          </ArrowLink>
+        </div>
+        <div className="k-navy relative lg:col-span-7">
+          <div className="relative overflow-hidden rounded-[36px] bg-k-100 px-5 py-12 sm:px-10 sm:py-14">
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(110%_120%_at_50%_-20%,#2f4184_0%,transparent_60%)]"
+              className="pointer-events-none absolute inset-0 opacity-80 [background-image:linear-gradient(to_right,var(--k-200)_1px,transparent_1px),linear-gradient(to_bottom,var(--k-200)_1px,transparent_1px)] [background-size:32px_32px]"
             />
-            <div aria-hidden className="dot-grid pointer-events-none absolute inset-0 text-white opacity-[0.06]" />
+            <SyllabusSheet locale={locale} />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
-            <div className="relative">
-              <h2 className="mx-auto max-w-2xl text-[26px] font-extrabold leading-tight text-white md:text-[34px]">
-                {tr(
-                  locale,
-                  "Karyeranıza uyğun ixtisası tapın",
-                  "Find the programme that matches your ambition"
-                )}
-              </h2>
-              <p className="mx-auto mt-4 max-w-xl text-[15.5px] leading-relaxed text-white/65">
-                {tr(
-                  locale,
-                  "Bütün proqramları, fənləri və təlim nəticələrini bir kliklə araşdırın.",
-                  "Explore every programme, subject and learning outcome in a couple of clicks."
-                )}
-              </p>
-              <div className="mt-9 flex flex-wrap justify-center gap-3">
-                <ButtonLink href={`/${lang}/bachelor`} tone="onBrand">
-                  {tr(locale, "Bakalavr ixtisasları", "Bachelor programmes")}
-                  <ArrowRight />
-                </ButtonLink>
-                <ButtonLink href={`/${lang}/contact`} tone="onBrandGhost">
-                  {tr(locale, "Bizimlə əlaqə", "Get in touch")}
-                </ButtonLink>
+/* ── FAQ ───────────────────────────────────────────────────── */
+
+function Faq({ locale, faq }: { locale: Locale; faq: HomeProps["faq"] }) {
+  return (
+    <section className="section pt-0" aria-labelledby="faq-title">
+      <div className="wrap grid gap-10 lg:grid-cols-12">
+        <div className="lg:col-span-4">
+          <h2 id="faq-title" className="d-lg max-w-[12ch]">
+            {tr(locale, "Tez-tez verilən suallar", "Frequently asked questions")}
+          </h2>
+          <p className="mt-5 max-w-sm text-[16.5px] leading-relaxed text-ink-2">
+            {tr(locale, "Cavabını tapmadınız?", "Didn't find your answer?")}{" "}
+            <Link href={`/${locale}/contact`} className="font-semibold text-navy underline decoration-gold decoration-2 underline-offset-4">
+              {tr(locale, "Universitetlə əlaqə saxlayın", "Contact the university")}
+            </Link>
+            .
+          </p>
+        </div>
+        <div className="border-t border-line lg:col-span-8">
+          {faq.map((item) => (
+            <details key={item.q} className="faq-item">
+              <summary>
+                {item.q}
+                <span className="pm" aria-hidden>
+                  <IconPlus />
+                </span>
+              </summary>
+              <p className="a">{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Closing call to action ────────────────────────────────── */
+
+function ClosingCta({ locale }: { locale: Locale }) {
+  return (
+    <section className="pb-20 md:pb-28" aria-labelledby="cta-title">
+      <div className="wrap">
+        <div className="on-navy relative isolate overflow-hidden rounded-[40px] bg-brand-navy px-7 py-14 text-white sm:px-12 md:py-20 lg:px-16">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.12] [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] [background-size:40px_40px] [mask-image:radial-gradient(60%_80%_at_85%_20%,#000,transparent_75%)]"
+          />
+          <div aria-hidden className="absolute -right-10 top-1/2 hidden -translate-y-1/2 grid-cols-3 gap-3 lg:grid">
+            {(
+              [
+                ["k-it", "code"],
+                ["k-gold", "star"],
+                ["k-data", "dots"],
+                ["k-energy", "waves"],
+                ["k-eng", "gear"],
+                ["k-res", "book"],
+              ] as const
+            ).map(([hue, art]) => (
+              <div key={art} className={cx("mo h-[118px] w-[118px] !rounded-[26px]", hue, art === "star" && "gold")}>
+                <TileArt name={art} />
               </div>
+            ))}
+          </div>
+          <div className="relative max-w-[40rem]">
+            <p className="kicker !text-white/75">{tr(locale, "Bakalavr və magistr", "Bachelor's and master's")}</p>
+            <h2 id="cta-title" className="d-lg mt-5 !text-white">
+              {tr(locale, "Sənə uyğun ixtisası bu gün tap", "Find the programme that fits you")}
+            </h2>
+            <p className="mt-5 max-w-[34rem] text-[17px] leading-relaxed text-white/80">{t("home", "desc", locale)}</p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <ButtonLink href={catalogPath(locale, 1)} tone="gold" size="lg" arrow>
+                {tr(locale, "Bakalavr ixtisasları", "Bachelor's programmes")}
+              </ButtonLink>
+              <ButtonLink href={catalogPath(locale, 2)} tone="outline-on-navy" size="lg">
+                {tr(locale, "Magistr ixtisasları", "Master's programmes")}
+              </ButtonLink>
             </div>
-          </motion.div>
-        </Container>
-      </Section>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Page ──────────────────────────────────────────────────── */
+
+export default function Home(props: HomeProps) {
+  const { locale } = props;
+  return (
+    <>
+      <Hero locale={locale} faculties={props.faculties} newest={props.newest} />
+      {props.faculties.length > 0 && <FacultyBento locale={locale} faculties={props.faculties} />}
+      <ProgrammesSection locale={locale} items={props.carousel} />
+      <DegreeCards locale={locale} counts={props.counts} />
+      <Steps
+        locale={locale}
+        example={props.newest?.name ?? tr(locale, "İxtisas adı və ya kodu", "Programme name or code")}
+      />
+      <Showcase locale={locale} />
+      <Faq locale={locale} faq={props.faq} />
+      <ClosingCta locale={locale} />
     </>
   );
 }

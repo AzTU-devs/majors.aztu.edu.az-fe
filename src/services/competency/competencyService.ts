@@ -1,4 +1,4 @@
-import apiClient from "../../util/apiClient";
+import { apiGet } from "../../util/apiClient";
 
 /** competency_type: 1 = Peşə (job), 2 = İxtisas (specialty/general). */
 export interface Competency {
@@ -13,16 +13,12 @@ export interface Competency {
 export const getCompetencyBySpecialty = async (
     specialtyKey: string,
     lang_code: string,
+    signal?: AbortSignal,
 ): Promise<Competency[]> => {
-    try {
-        const response = await apiClient.get(
-            `/api/competency/${encodeURIComponent(specialtyKey)}?lang=${lang_code}`
-        );
-        if (response.data.statusCode === 200 && Array.isArray(response.data.competencies)) {
-            return response.data.competencies as Competency[];
-        }
-        return [];
-    } catch {
-        return [];
-    }
+    if (!specialtyKey) return [];
+    const body = await apiGet<{ competencies?: Competency[] }>(
+        `/api/competency/${encodeURIComponent(specialtyKey)}?lang=${lang_code}`,
+        signal,
+    );
+    return Array.isArray(body?.competencies) ? body.competencies : [];
 };

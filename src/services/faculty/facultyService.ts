@@ -1,4 +1,4 @@
-import apiClient from "../../util/apiClient";
+import { apiGet, uniqueBy } from "../../util/apiClient";
 
 export interface Faculty {
     faculty_code: string;
@@ -6,21 +6,13 @@ export interface Faculty {
 }
 
 /**
- * All faculties for a language.
- *
- * Always resolves to an array — the previous version returned `undefined` for
- * any non-200 body and had no catch, so a failed request rejected inside the
- * caller's `.then()` chain.
+ * All faculties for a language. [] when there are none; rejects with ApiError
+ * when the API fails.
  */
-export const getFaculties = async (lang_code: string): Promise<Faculty[]> => {
-    try {
-        const response = await apiClient.get(`/api/faculties?lang=${lang_code}`);
-        // The faculties endpoint reports its status as `status` (not `statusCode`).
-        if (response.data?.status === 200 && Array.isArray(response.data.faculties)) {
-            return response.data.faculties as Faculty[];
-        }
-        return [];
-    } catch {
-        return [];
-    }
+export const getFaculties = async (lang_code: string, signal?: AbortSignal): Promise<Faculty[]> => {
+    const body = await apiGet<{ faculties?: Faculty[] }>(`/api/faculties?lang=${lang_code}`, signal);
+    const list = Array.isArray(body?.faculties) ? body.faculties : [];
+    // Translations are not unique per (faculty, language); a duplicate row
+    // would otherwise produce two chips with the same React key.
+    return uniqueBy(list, (f) => f.faculty_code);
 };

@@ -10,17 +10,39 @@ export type Locale = (typeof LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = "az";
 
-/** Narrow an unknown route segment to a supported locale. */
-export function resolveLocale(value: unknown): Locale {
-  const raw = Array.isArray(value) ? value[0] : value;
-  return LOCALES.includes(raw as Locale) ? (raw as Locale) : DEFAULT_LOCALE;
+/** Whether a value is a supported locale. */
+export function isLocale(value: unknown): value is Locale {
+  return LOCALES.includes(value as Locale);
 }
 
-/** BCP-47 tags, used for `<html lang>` and hreflang alternates. */
+/**
+ * Narrow an unknown value to a supported locale (the default otherwise).
+ * For headers and client hooks; a route's `[lang]` segment goes through
+ * localeParam (src/lib/params.ts), which answers 404 instead.
+ */
+export function resolveLocale(value: unknown): Locale {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return isLocale(raw) ? raw : DEFAULT_LOCALE;
+}
+
+/**
+ * BCP-47 tags, used for `<html lang>` and the hreflang alternates (the same
+ * values appear in the sitemap). Plain language codes: the catalogue is for
+ * Azerbaijani and English readers wherever they are, not one region.
+ */
 export const HTML_LANG: Record<Locale, string> = {
-  az: "az-AZ",
+  az: "az",
   en: "en",
 };
+
+/** Open Graph locale tags. */
+export const OG_LOCALE: Record<Locale, string> = {
+  az: "az_AZ",
+  en: "en_US",
+};
+
+/** Browser UI colour (meta theme-color) per colour scheme. */
+export const THEME_COLOR = { light: "#f6f8fc", dark: "#060d18" } as const;
 
 /**
  * Public origin of the site. Set NEXT_PUBLIC_SITE_URL in the environment;
@@ -38,14 +60,14 @@ export const UNIVERSITY = {
   email: "aztu@aztu.edu.az",
   phones: ["+994125383383", "+994125391305"],
   address: {
-    streetAz: "H.Cavid prospekti 25",
-    streetEn: "25 H.Javid Avenue",
+    streetAz: "H. Cavid prospekti 25",
+    streetEn: "25 H. Javid Avenue",
     cityAz: "Bakı",
     cityEn: "Baku",
     postalCode: "AZ1073",
     countryCode: "AZ",
   },
-  /** Approximate campus coordinates, used for LocalBusiness/Place markup. */
+  /** Approximate campus coordinates, used for the map and Place markup. */
   geo: { lat: 40.3777, lng: 49.8339 },
   founded: "1920",
 } as const;
@@ -55,9 +77,10 @@ export const SITE_NAME: Record<Locale, string> = {
   en: "AzTU Academic Programmes",
 };
 
-export const SITE_TAGLINE: Record<Locale, string> = {
-  az: "İxtisas İnformasiya Sistemi",
-  en: "Programme Information System",
+/** Second line of the header wordmark ("AZTU" / this). */
+export const BRAND_WORDMARK: Record<Locale, string> = {
+  az: "İxtisaslar",
+  en: "Programmes",
 };
 
 export const SITE_DESCRIPTION: Record<Locale, string> = {
@@ -80,21 +103,18 @@ export const SITE_KEYWORDS: Record<Locale, string[]> = {
     "sillabus",
     "tədris planı",
     "təlim nəticələri",
-    "qəbul",
   ],
   en: [
     "AzTU",
     "Azerbaijan Technical University",
-    "specialties",
     "academic programmes",
-    "bachelor degree",
-    "master degree",
+    "bachelor's degree",
+    "master's degree",
     "faculties",
     "departments",
     "syllabus",
     "curriculum",
     "learning outcomes",
-    "admissions",
   ],
 };
 
@@ -103,33 +123,30 @@ export function absoluteUrl(path = "/"): string {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-/**
- * Canonical + hreflang alternates for a path *without* its locale prefix.
- *
- * `localePath("/bachelor", "en")` -> canonical /en/bachelor, alternates for
- * every locale plus x-default pointing at the default locale.
- */
-export function localeAlternates(pathWithoutLocale: string, locale: Locale) {
+/** The hreflang map for a path *without* its locale prefix. */
+export function languageAlternates(pathWithoutLocale: string): Record<string, string> {
   const clean = pathWithoutLocale === "/" ? "" : pathWithoutLocale.replace(/\/$/, "");
   const languages: Record<string, string> = {};
-  for (const l of LOCALES) {
-    languages[HTML_LANG[l]] = absoluteUrl(`/${l}${clean}`);
-  }
+  for (const l of LOCALES) languages[HTML_LANG[l]] = absoluteUrl(`/${l}${clean}`);
   languages["x-default"] = absoluteUrl(`/${DEFAULT_LOCALE}${clean}`);
-
-  return {
-    canonical: absoluteUrl(`/${locale}${clean}`),
-    languages,
-  };
+  return languages;
 }
 
 /**
- * Whether the site is behind the password gate.
+ * Canonical + hreflang alternates for a path *without* its locale prefix.
  *
- * The gate hides the whole site from visitors *and* from search engines, so it
- * must be switched off before any of the SEO work here can take effect. Set
- * SITE_GATE=off once the site is ready to be public.
+ * `localeAlternates("/bachelor", "en")` -> canonical /en/bachelor, alternates
+ * for every locale plus x-default pointing at the default locale.
  */
-export const GATE_ENABLED =
-  (process.env.SITE_GATE ?? process.env.NEXT_PUBLIC_SITE_GATE ?? "on").toLowerCase() !==
-  "off";
+export function localeAlternates(pathWithoutLocale: string, locale: Locale) {
+  const clean = pathWithoutLocale === "/" ? "" : pathWithoutLocale.replace(/\/$/, "");
+  return {
+    canonical: absoluteUrl(`/${locale}${clean}`),
+    languages: languageAlternates(pathWithoutLocale),
+  };
+}
+
+/** Collapse runs of whitespace (catalogue names can carry stray tabs). */
+export function clean(value: string | null | undefined): string {
+  return (value ?? "").replace(/\s+/g, " ").trim();
+}

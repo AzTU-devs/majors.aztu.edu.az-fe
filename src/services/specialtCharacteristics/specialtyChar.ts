@@ -1,4 +1,4 @@
-import apiClient from "../../util/apiClient";
+import { apiGet } from "../../util/apiClient";
 
 export interface SpecialtyChar {
     id?: number;
@@ -7,20 +7,16 @@ export interface SpecialtyChar {
     degree_requirements: string;
 }
 
-/** Returns null when the programme has no characteristics recorded. */
+/** Null when the programme has no characteristics recorded; rejects on API failure. */
 export const getSpecialtyChar = async (
     specialtyKey: string,
     lang_code: string,
+    signal?: AbortSignal,
 ): Promise<SpecialtyChar | null> => {
-    try {
-        const response = await apiClient.get(
-            `/api/specialty-characteristics/${encodeURIComponent(specialtyKey)}?lang=${lang_code}`
-        );
-        if (response.data.statusCode === 200 && Array.isArray(response.data.characteristics)) {
-            return (response.data.characteristics[0] as SpecialtyChar) ?? null;
-        }
-        return null;
-    } catch {
-        return null;
-    }
+    if (!specialtyKey) return null;
+    const body = await apiGet<{ characteristics?: SpecialtyChar[] }>(
+        `/api/specialty-characteristics/${encodeURIComponent(specialtyKey)}?lang=${lang_code}`,
+        signal,
+    );
+    return Array.isArray(body?.characteristics) ? (body.characteristics[0] ?? null) : null;
 };

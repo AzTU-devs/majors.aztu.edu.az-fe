@@ -1,102 +1,69 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { Inter, IBM_Plex_Sans } from "next/font/google";
+import { Albert_Sans, JetBrains_Mono, Onest } from "next/font/google";
 
 import "./globals.css";
 import ReduxProvider from "@/redux/ReduxProvider";
 import ThemeProvider from "@/components/themeProvider/ThemeProvider";
+import { NONCE_HEADER } from "@/lib/csp";
+import { API_BASE_URL } from "@/util/apiClient";
 import {
   DEFAULT_LOCALE,
   HTML_LANG,
   SITE_DESCRIPTION,
-  SITE_KEYWORDS,
   SITE_NAME,
   SITE_URL,
+  THEME_COLOR,
   UNIVERSITY,
   resolveLocale,
 } from "@/lib/site";
 
-const inter = Inter({
-  variable: "--font-inter",
+/*
+  Fonts are self-hosted by next/font (served from /_next/static/media), so the
+  Content-Security-Policy needs no third-party origin. All three cover the
+  Azerbaijani alphabet (ə, ğ, ı, İ, ö, ş, ü, ç) through the latin-ext subset.
+*/
+const albert = Albert_Sans({
+  variable: "--font-albert",
   subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
-// Used for headings. IBM Plex Sans has full Azerbaijani coverage (ə, ğ, ı, ş, ç)
-// and reads as engineered rather than decorative — a good fit for a technical
-// university.
-const plex = IBM_Plex_Sans({
-  variable: "--font-plex",
+const onest = Onest({
+  variable: "--font-onest",
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700"],
   display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  variable: "--font-jbm",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+  // Codes are small and below the fold; not worth a preload.
+  preload: false,
 });
 
 export const metadata: Metadata = {
-  // Makes every relative URL below (canonical, OG image, …) absolute.
+  // Makes every relative URL in page metadata (canonical, OG image, …) absolute.
   metadataBase: new URL(SITE_URL),
-  title: {
-    default: `${SITE_NAME[DEFAULT_LOCALE]} — ${UNIVERSITY.nameAz}`,
-    template: `%s | ${UNIVERSITY.shortName}`,
-  },
+  title: `${SITE_NAME[DEFAULT_LOCALE]} — ${UNIVERSITY.nameAz}`,
   description: SITE_DESCRIPTION[DEFAULT_LOCALE],
-  keywords: SITE_KEYWORDS[DEFAULT_LOCALE],
   applicationName: SITE_NAME[DEFAULT_LOCALE],
   authors: [{ name: UNIVERSITY.nameEn, url: UNIVERSITY.url }],
   creator: UNIVERSITY.nameEn,
   publisher: UNIVERSITY.nameEn,
   category: "education",
-  referrer: "origin-when-cross-origin",
-  formatDetection: { telephone: true, address: true, email: true },
-  openGraph: {
-    type: "website",
-    siteName: SITE_NAME[DEFAULT_LOCALE],
-    title: `${SITE_NAME[DEFAULT_LOCALE]} — ${UNIVERSITY.nameAz}`,
-    description: SITE_DESCRIPTION[DEFAULT_LOCALE],
-    url: `${SITE_URL}/${DEFAULT_LOCALE}`,
-    locale: "az_AZ",
-    alternateLocale: ["en_US"],
-    images: [
-      {
-        url: "/aztu-campus.jpg",
-        width: 1920,
-        height: 1280,
-        alt: UNIVERSITY.nameAz,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${SITE_NAME[DEFAULT_LOCALE]} — ${UNIVERSITY.shortName}`,
-    description: SITE_DESCRIPTION[DEFAULT_LOCALE],
-    images: ["/aztu-campus.jpg"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
-    },
-  },
-  alternates: {
-    canonical: `${SITE_URL}/${DEFAULT_LOCALE}`,
-    languages: {
-      "az-AZ": `${SITE_URL}/az`,
-      en: `${SITE_URL}/en`,
-      "x-default": `${SITE_URL}/az`,
-    },
-  },
-  // Favicon/apple icon come from src/app/icon.png.
+  referrer: "strict-origin-when-cross-origin",
+  formatDetection: { telephone: false, address: false, email: false },
+  // Canonical, hreflang and Open Graph are set per page (src/lib/seo.ts):
+  // declaring them here made every page that forgot them inherit the home
+  // page's canonical. Icons come from src/app/{favicon.ico,icon.svg,apple-icon.png}.
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#141e53" },
-    { media: "(prefers-color-scheme: dark)", color: "#070b1a" },
+    { media: "(prefers-color-scheme: light)", color: THEME_COLOR.light },
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLOR.dark },
   ],
   colorScheme: "light dark",
   width: "device-width",
@@ -129,19 +96,24 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   // in the initial response, not after hydration.
   const requestHeaders = await headers();
   const locale = resolveLocale(requestHeaders.get("x-aztu-lang"));
+  // The CSP allows inline scripts only with this request's nonce.
+  const nonce = requestHeaders.get(NONCE_HEADER) ?? undefined;
 
   return (
-    <html lang={HTML_LANG[locale]} suppressHydrationWarning>
+    // The font variables go on <html>: the design tokens on :root (--f-display,
+    // --f-sans, --f-mono) reference them, and a custom property can only
+    // resolve variables defined on its own element or above.
+    <html
+      lang={HTML_LANG[locale]}
+      className={`${albert.variable} ${onest.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        {/* Warm up the API origin before the first client fetch. */}
-        <link
-          rel="preconnect"
-          href={process.env.NEXT_PUBLIC_API_BASE_URL || "https://api-majors.aztu.edu.az"}
-          crossOrigin=""
-        />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* Interactive filters call the API from the browser. */}
+        <link rel="dns-prefetch" href={API_BASE_URL} />
       </head>
-      <body className={`${inter.variable} ${plex.variable} antialiased`}>
+      <body>
         <a href="#main" className="skip-link">
           {locale === "az" ? "Əsas məzmuna keç" : "Skip to main content"}
         </a>

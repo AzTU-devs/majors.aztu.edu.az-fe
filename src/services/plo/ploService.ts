@@ -1,4 +1,4 @@
-import apiClient from "../../util/apiClient";
+import { apiGet } from "../../util/apiClient";
 
 export interface PloInterface {
     id: number;
@@ -11,16 +11,12 @@ export interface PloInterface {
 export const getPloBySpecialty = async (
     specialtyKey: string,
     locale: string,
+    signal?: AbortSignal,
 ): Promise<PloInterface[]> => {
-    try {
-        const response = await apiClient.get(
-            `/api/plo/${encodeURIComponent(specialtyKey)}?lang=${locale}`
-        );
-        if (response.data.statusCode === 200 && Array.isArray(response.data.plos)) {
-            return response.data.plos as PloInterface[];
-        }
-        return [];
-    } catch {
-        return [];
-    }
+    if (!specialtyKey) return [];
+    const body = await apiGet<{ plos?: PloInterface[] }>(
+        `/api/plo/${encodeURIComponent(specialtyKey)}?lang=${locale}`,
+        signal,
+    );
+    return Array.isArray(body?.plos) ? body.plos : [];
 };

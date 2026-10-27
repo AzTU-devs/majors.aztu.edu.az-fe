@@ -1,4 +1,4 @@
-import apiClient from "../../util/apiClient";
+import { apiGet } from "../../util/apiClient";
 
 export interface CloPloMatch {
     clo_code: string;
@@ -7,17 +7,13 @@ export interface CloPloMatch {
 
 // Returns the list of CLO→PLO matches for the CLOs that belong to a subject.
 export const getCloPloMatchesBySubject = async (
-    subjectKey: string
+    subjectKey: string,
+    signal?: AbortSignal,
 ): Promise<CloPloMatch[]> => {
-    try {
-        const response = await apiClient.get(
-            `/api/clo-plo-match/subject/${encodeURIComponent(subjectKey)}`
-        );
-        if (response.data.statusCode === 200 && Array.isArray(response.data.data)) {
-            return response.data.data;
-        }
-        return [];
-    } catch {
-        return [];
-    }
+    if (!subjectKey) return [];
+    const body = await apiGet<{ data?: CloPloMatch[] }>(
+        `/api/clo-plo-match/subject/${encodeURIComponent(subjectKey)}`,
+        signal,
+    );
+    return Array.isArray(body?.data) ? body.data : [];
 };
